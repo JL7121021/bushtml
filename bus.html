@@ -258,7 +258,7 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
 </style>
 </head>
 <body>
-<div class="alert-bar floating" id="alertBar" role="status" hidden><span>🔔 出門提示持續中（聲音／震動）</span><button type="button" data-action="stop-alert">停止提示</button></div>
+<div class="alert-bar floating" id="alertBar" role="status" hidden><span id="alertBarText">🔔 出門提示持續中（聲音／震動）</span><button type="button" data-action="mark-left">出門了</button><button type="button" data-action="stop-alert">停止提示</button></div>
 <div class="app">
   <header class="hero">
     <div class="hero-top">
@@ -452,7 +452,7 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
 <noscript><p style="text-align:center;padding:24px">請開啟 JavaScript 以查看實時班次及天氣。</p></noscript>
 <script>
 'use strict';
-const VERSION='1.0.19';
+const VERSION='1.0.20';
 /* ===== config ===== */
 const API = {
   routes: 'https://data.etabus.gov.hk/v1/transport/kmb/route/',
@@ -544,7 +544,7 @@ const state = {
   panelOrder:['bus','weather','hourly','news'], newsVisible:false, news:null,
   routeNews:{}, routeNewsOpen:false,
   alertOn:false, alertMax:0, alertCount:0, audioCtx:null, alertAudio:null, alertPool:[], alertIndex:0, audioUnlocked:false, dueSince:0, alertSuppressedTarget:null, wakeLock:null, wakeLockWanted:true, notifyEnabled:false, leaveNotifiedTarget:null,
-  bgAudioOn:false, bgAudioEl:null, bgAuto:false, bgAutoStarted:false, bgMetaKey:'',
+  bgAudioOn:false, bgAudioEl:null, bgAuto:false, bgAutoStarted:false, bgMetaKey:'', arrivalPhase:false,
 };
 let etaToken=0, wxToken=0, hourlyToken=0, newsToken=0, routeNewsToken=0, toastTimer=null, alertTimer=null;
 function readJSON(k,f){ try { const s=localStorage.getItem(k); return s?JSON.parse(s):f; } catch { return f; } }
@@ -1170,7 +1170,7 @@ function leaveInfo() {
   const bus=state.etas[state.selectedBus]||state.etas[0];
   if (!bus) return {target:null,sub:state.etaError?'未能取得班次，請稍後重試':`等待 ${state.route} 班次資料…`};
   const target=bus.t-state.walkMin*60000;
-  return {target,sub:`${timeOf(target)} 出門 → ${timeOf(bus.t)} 到站 · 步行 ${state.walkMin} 分鐘`};
+  return {target,arrival:bus.t,sub:`${timeOf(target)} 出門 → ${timeOf(bus.t)} 到站 · 步行 ${state.walkMin} 分鐘`};
 }
 function renderLeave() {
   $('#walkValue').textContent=state.walkMin;
@@ -1185,16 +1185,19 @@ function tickLeave() {
     state.dueSince=0;
     panel.classList.remove('due','soon','near'); count.textContent='--:--';
   } else {
-    const diff=info.target-Date.now(), due=diff<=0;
+    const diff=info.target-Date.now(), due=diff<=0||state.arrivalPhase;
     if (due) {
       if (!state.dueSince) state.dueSince=Date.now();
       const armed=Date.now()-state.dueSince>=15000;
+      const arrivalDiff=(info.arrival!=null&&Number.isFinite(info.arrival))?info.arrival-Date.now():null;
       panel.classList.toggle('due',armed); panel.classList.toggle('soon',!armed);
       panel.classList.remove('near');
-      count.textContent=armed?'出門口！':'準備出發';
+      count.textContent=!armed?'準備出發':(arrivalDiff>0?`還有 ${Math.ceil(arrivalDiff/60000)} 分鐘到站`:'已到站');
+      const barText=$('#alertBarText'); if (barText) barText.textContent=armed?'🔔 已出門 · 到站倒數中（聲音／震動）':'🔔 出門提示持續中（聲音／震動）';
       if (state.alertSuppressedTarget!==info.target) startLeaveAlert();
     } else {
       state.dueSince=0;
+      state.arrivalPhase=false;
       state.alertSuppressedTarget=null;
       panel.classList.remove('due');
       panel.classList.toggle('soon',diff<=60000);
@@ -1356,19 +1359,30 @@ function updateBgMetadata(info) {
     else if (info.target!=null && Number.isFinite(info.target)) {
       const diff=info.target-Date.now();
       const arrival=timeOf(info.target+state.walkMin*60000);
-      if (diff>0) {
+      if (diff>0 && !state.arrivalPhase) {
         const mins=Math.ceil(diff/60000);
         title=`還有 ${mins} 分鐘出門`;
         artist=`🚪 ${timeOf(info.target)} 出門 · 🚌 ${arrival} 到站 · ${route}`;
         icon=(mins>=1&&mins<=20)?`png/${mins}.png`:'png/bus.png';
       } else {
         const armed=(Date.now()-(state.dueSince||Date.now()))>=15000;
-        title=armed?'出門口！':'準備出發';
-        artist=`🚪 ${timeOf(info.target)} 出門 · 🚌 ${arrival} 到站 · ${route}`;
-        icon=armed?'png/go.png':'png/arrive.png';
+        const arrivalDiff=(info.arrival!=null&&Number.isFinite(info.arrival))?info.arrival-Date.now():null;
+        if (!armed) {
+          title='準備出發';
+          artist=`🚪 ${timeOf(info.target)} 出門 · 🚌 ${arrival} 到站 · ${route}`;
+          icon='png/arrive.png';
+        } else if (arrivalDiff>0) {
+          const amins=Math.ceil(arrivalDiff/60000);
+          title=`出門了 · 還有 ${amins} 分鐘到站`;
+          artist=`🚪 已出門 · 🚌 ${arrival} 到站 · ${route}`;
+          icon=(amins>=1&&amins<=20)?`png/${amins}.png`:'png/go.png';
+        } else {
+          title='已到站';
+          artist=`🚌 ${arrival} 到站 · ${route}`;
+          icon='png/arrive.png';
+        }
       }
     }
-    if (state.alertOn) icon='png/go.png';
     const album=state.alertOn?'🔔 提示響鬧中':'🚌 九巴／龍運到站';
     const key=title+'|'+artist+'|'+album+'|'+icon;
     if (key!==state.bgMetaKey) {
@@ -1773,7 +1787,14 @@ function bindEvents() {
     const row=e.target.closest('[data-eta-pick]');
     if (row) { e.preventDefault(); row.click(); }
   });
-  $('#alertBar').addEventListener('click',(e)=>{ if(e.target.closest('[data-action="stop-alert"]')) stopLeaveAlert(); });
+  $('#alertBar').addEventListener('click',(e)=>{
+    if (e.target.closest('[data-action="stop-alert"]')) { stopLeaveAlert(); return; }
+    if (e.target.closest('[data-action="mark-left"]')) {
+      state.arrivalPhase=true;
+      state.dueSince=Math.min(state.dueSince||Date.now(),Date.now()-15000);
+      tickLeave(); toast('已改為到站倒數');
+    }
+  });
   $('#routeSearch').addEventListener('input',(e)=>renderRouteList(e.target.value));
   $('#stopSearch').addEventListener('input',(e)=>renderStopList(e.target.value));
   $('#routeSheet').addEventListener('click',(e)=>{
