@@ -304,7 +304,7 @@ button,input{font-family:inherit} button{cursor:pointer;color:inherit} button:ac
       <div class="wx-hours" id="wxHours"></div>
     </section>
   </main>
-  <footer class="foot">資料來源：九巴／龍運開放數據 · 香港天文台 · Open-Meteo<br>班次及天氣資料僅供參考</footer>
+  <footer class="foot">資料來源：九巴／龍運開放數據 · 香港天文台 · Open-Meteo<br>班次及天氣資料僅供參考 · <span id="versionTag"></span></footer>
 </div>
 
 <div class="sheet-backdrop" id="sheetBackdrop" hidden></div>
@@ -338,6 +338,7 @@ button,input{font-family:inherit} button{cursor:pointer;color:inherit} button:ac
 <noscript><p style="text-align:center;padding:24px">請開啟 JavaScript 以查看實時班次及天氣。</p></noscript>
 <script>
 'use strict';
+const VERSION='1.0.0';
 /* ===== config ===== */
 const API = {
   routes: 'https://data.etabus.gov.hk/v1/transport/kmb/route/',
@@ -641,6 +642,7 @@ const isFavStop=(id)=>state.favStops.includes(id);
 
 /* ===== boot ===== */
 async function bootstrap() {
+  $('#versionTag').textContent='v'+VERSION;
   installIcons(); purgeLegacyPrefs(); loadPrefs(); applyTheme(state.theme); applyPanelOrder(state.panelOrder); checkA2HS();
   bindEvents(); updateDateLabels(); renderScenes(); renderBus(); renderLeave(); renderUtilityButtons();
   await Promise.allSettled([loadRouteList(),loadStopMap(),loadWeather()]);
@@ -1152,7 +1154,7 @@ function renderWeather() {
   const umbrella=(range.psr!=null&&range.psr>=40)||hko.rainHint||(chance!=null&&chance>=50)||rain.max>=0.5||warns.some(w=>/雨|暴雨|雷暴/.test(w.name+w.desc));
   const rangeText=(range.lo!=null&&range.hi!=null)?`${Math.round(range.lo)}° / ${Math.round(range.hi)}°`:'--° / --°';
   $('#heroWxIcon').textContent=rain.icon;
-  $('#heroWxRain').textContent=rain.text;
+  $('#heroWxRain').textContent=rain.text==='而家無雨'?'':rain.text;
   $('#heroWxRange').textContent=rangeText;
   $('#wxIcon').textContent=rain.icon; $('#wxRain').textContent=rain.text;
   $('#wxTemp').textContent=temp==null?'--':temp;
