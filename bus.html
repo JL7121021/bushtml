@@ -21,6 +21,9 @@
 :root {
   color-scheme: light;
   --bg:#e9eef5; --surface:#e9eef5;
+  --bg-grad:radial-gradient(circle at 16% -8%,rgba(59,111,224,.16),transparent 36%),radial-gradient(circle at 92% 4%,rgba(46,168,107,.12),transparent 32%),linear-gradient(180deg,#dfe6f1 0%,#eef2f8 48%,#e6edf6 100%);
+  --card-bg:linear-gradient(145deg,rgba(255,255,255,.72),rgba(255,255,255,.1)),var(--surface);
+  --card-line:rgba(255,255,255,.78); --card-shadow:rgba(126,146,178,.34);
   --ink:#2b3648; --ink2:#5f6c80; --ink3:#96a2b4;
   --sd:rgba(163,177,198,.62); --sl:rgba(255,255,255,.95);
   --out:8px 8px 18px var(--sd), -8px -8px 18px var(--sl);
@@ -35,6 +38,9 @@
   :root:not([data-theme="light"]) {
     color-scheme:dark;
     --bg:#1b2230; --surface:#1b2230; --ink:#e9eef7; --ink2:#a9b4c6; --ink3:#78849a;
+    --bg-grad:radial-gradient(circle at 16% -8%,rgba(123,166,255,.15),transparent 34%),radial-gradient(circle at 92% 2%,rgba(59,130,196,.12),transparent 30%),linear-gradient(180deg,#151b27 0%,#202a3b 55%,#141a25 100%);
+    --card-bg:linear-gradient(145deg,rgba(255,255,255,.06),rgba(255,255,255,.012)),var(--surface);
+    --card-line:rgba(255,255,255,.1); --card-shadow:rgba(0,0,0,.44);
     --sd:rgba(0,0,0,.58); --sl:rgba(255,255,255,.055);
     --accent:#7ba6ff; --amber:#ffb340; --danger:#ff6b6f; --line:rgba(255,255,255,.08);
   }
@@ -42,11 +48,14 @@
 :root[data-theme="dark"] {
   color-scheme:dark;
   --bg:#1b2230; --surface:#1b2230; --ink:#e9eef7; --ink2:#a9b4c6; --ink3:#78849a;
+  --bg-grad:radial-gradient(circle at 16% -8%,rgba(123,166,255,.15),transparent 34%),radial-gradient(circle at 92% 2%,rgba(59,130,196,.12),transparent 30%),linear-gradient(180deg,#151b27 0%,#202a3b 55%,#141a25 100%);
+  --card-bg:linear-gradient(145deg,rgba(255,255,255,.06),rgba(255,255,255,.012)),var(--surface);
+  --card-line:rgba(255,255,255,.1); --card-shadow:rgba(0,0,0,.44);
   --sd:rgba(0,0,0,.58); --sl:rgba(255,255,255,.055);
   --accent:#7ba6ff; --amber:#ffb340; --danger:#ff6b6f; --line:rgba(255,255,255,.08);
 }
 *{-webkit-tap-highlight-color:transparent} html{-webkit-text-size-adjust:100%} [hidden]{display:none!important}
-body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);overflow-x:hidden;touch-action:manipulation;transition:background .35s ease;
+body{margin:0;min-height:100dvh;background:var(--bg-grad);background-attachment:fixed;color:var(--ink);overflow-x:hidden;touch-action:manipulation;transition:background .35s ease;
  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang HK","PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 button,input{font-family:inherit} button{cursor:pointer;color:inherit} button:active{transform:scale(.975)}
@@ -68,7 +77,7 @@ button,input{font-family:inherit} button{cursor:pointer;color:inherit} button:ac
 .util-btn:active{box-shadow:var(--in-sm)}
 /* cards */
 .stack{display:flex;flex-direction:column;gap:12px;margin-top:12px}
-.card{background:var(--surface);border-radius:22px;padding:14px;box-shadow:var(--out)}
+.card{background:var(--card-bg);border:1px solid var(--card-line);border-radius:22px;padding:14px;box-shadow:var(--out),0 16px 34px var(--card-shadow)}
 .card-head{display:flex;align-items:center;gap:9px;margin-bottom:9px}
 .card-head h1,.card-head h2{margin:0;font-size:16px;font-weight:700;letter-spacing:-.015em}
 .head-ico{width:28px;height:28px;border-radius:10px;flex:none;display:grid;place-items:center;font-size:14px;background:var(--surface);box-shadow:var(--out-xs)}
@@ -162,9 +171,10 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
 .wx-cur{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}.wx-cur sup{font-size:10px;color:var(--ink2);margin-left:2px;vertical-align:10px}
 .wx-range{font-size:22px;font-weight:750;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-bottom:3px}
 .wx-umbrella{font-size:11px;color:var(--ink2);margin-bottom:6px;min-height:14px}
-.wx-alt{font-size:10px;color:var(--ink3);padding:5px 8px;border-radius:10px;background:var(--surface);box-shadow:var(--out-xs);margin-bottom:8px}
-.wx-alt a,.wx-hours-title a{color:var(--accent);text-decoration:none}
-.wx-hours-title{font-size:10px;color:var(--ink3);margin:0 0 5px 2px}
+.wx-hours-title{display:flex;align-items:center;gap:5px;flex-wrap:wrap;font-size:10px;color:var(--ink3);margin:0 0 5px 2px}
+.wx-hours-title a{color:var(--accent);text-decoration:none}
+.hourly-step{display:inline-flex;align-items:center;gap:4px}
+.hourly-step select{border:0;border-radius:999px;padding:4px 8px;background:var(--surface);box-shadow:var(--out-xs);color:var(--accent);font-size:10px;font-weight:700;-webkit-appearance:none}
 .wx-hours{display:flex;gap:7px;overflow-x:auto;padding:2px 0 4px;margin:0 -2px;scrollbar-width:none}
 .wx-hours::-webkit-scrollbar{display:none}
 .hour{flex:0 0 54px;border-radius:14px;padding:6px 4px;background:var(--surface);box-shadow:var(--out-sm);display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
@@ -172,6 +182,23 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
 .hour .hi{font-size:17px;line-height:1.1}.hour .hp{font-size:9.5px;color:var(--blue);font-weight:700;font-variant-numeric:tabular-nums}
 .hour .hc{font-size:10.5px;font-weight:700;font-variant-numeric:tabular-nums}.hour-empty{font-size:11px;color:var(--ink3);padding:8px 2px}
 .app-open{text-decoration:none;font-size:15px;color:var(--accent)}
+
+/* news */
+.news-toggle{border:0;border-radius:999px;padding:7px 11px;margin-left:auto;background:var(--surface);box-shadow:var(--out-sm);color:var(--accent);font-size:11px;font-weight:700;white-space:nowrap}
+.news-toggle[aria-expanded="true"]{box-shadow:var(--in-sm)}
+.news-note{font-size:10px;color:var(--ink3);line-height:1.5}
+.news-groups{display:flex;flex-direction:column;gap:10px;margin-top:9px}
+.news-group-head{display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:11px;font-weight:750;color:var(--ink2)}
+.news-group-head a{color:var(--accent);text-decoration:none}
+.news-group-head .news-fresh{margin-left:auto;font-size:9px;font-weight:500;color:var(--ink3)}
+.news-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.news-item{display:flex;align-items:baseline;gap:6px;font-size:11px;line-height:1.45}
+.news-item a{flex:1;min-width:0;color:var(--ink);text-decoration:none;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.news-date,.news-source{flex:none;font-size:9px;color:var(--ink3);font-variant-numeric:tabular-nums}
+.news-source{color:var(--accent)}
+.news-empty,.news-loading{font-size:10.5px;color:var(--ink3);padding:4px 0}
+.news-credit{margin-top:4px;font-size:9px;color:var(--ink3);line-height:1.5}
+.news-credit a{color:var(--accent);text-decoration:none}
 
 /* sheets */
 .sheet-backdrop{position:fixed;inset:0;z-index:40;background:rgba(8,12,22,.38);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);opacity:0;transition:opacity .25s}
@@ -244,7 +271,7 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
         <button class="icon-btn" id="refreshBtn" type="button" aria-label="重新整理班次">
           <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.34 6.34M20 4v7h-7" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-        <a class="icon-btn app-open" id="busAppLink" href="https://apps.apple.com/hk/app/app1933-kmb-lwb/id1170003707" target="_blank" rel="noopener" aria-label="開啟九巴 App" title="開啟九巴 App">↗</a>
+        <a class="icon-btn app-open" id="busAppLink" href="https://search.kmb.hk/KMBWebSite?action=routesearch&amp;lang=zh-hk&amp;route=1" target="_blank" rel="noopener" aria-label="開啟九巴官方路線頁" title="開啟九巴官方路線頁">↗</a>
       </div>
       <div class="service-tabs" id="serviceTabs" hidden></div>
       <div class="segmented" id="dirTabs" role="tablist" aria-label="行車方向" data-active="O">
@@ -311,21 +338,34 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
       </div>
       <div class="wx-range" id="wxRange">--° / --°</div>
       <div class="wx-umbrella" id="wxUmbrella">—</div>
-      <div class="wx-alt">來源：<a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo / ECMWF ↗</a> · <span id="wxAltValue">載入中…</span></div>
     </section>
 
     <section class="card wx-hourly-card" id="panelHourly" data-panel="hourly" aria-labelledby="wxHourlyTitle">
       <div class="card-head">
         <div class="head-ico wx-ico" aria-hidden="true">🕒</div>
         <h2 id="wxHourlyTitle">未來 24 小時</h2>
-        <span class="head-note" id="wxHourlyNote">每 3 小時</span>
+        <span class="head-note" id="wxHourlyNote">24 小時</span>
         <div class="panel-moves" aria-label="排列未來 24 小時">
           <button class="panel-move-btn" type="button" data-move-panel="hourly" data-dir="up" aria-label="將未來 24 小時上移">↑</button>
           <button class="panel-move-btn" type="button" data-move-panel="hourly" data-dir="down" aria-label="將未來 24 小時下移">↓</button>
         </div>
       </div>
-      <div class="wx-hours-title">氣溫 / 下雨機會 · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo ↗</a></div>
+      <div class="wx-hours-title"><span>氣溫 / 下雨機會 · 每</span><label class="hourly-step"><select id="hourlyStep" aria-label="逐小時預報間隔"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option></select></label><span>小時 · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo ↗</a></span></div>
       <div class="wx-hours" id="wxHours"></div>
+    </section>
+
+    <section class="card news-card" id="panelNews" data-panel="news" aria-labelledby="newsTitle">
+      <div class="card-head">
+        <div class="head-ico" aria-hidden="true">📰</div>
+        <h2 id="newsTitle">最新消息</h2>
+        <div class="panel-moves" aria-label="排列最新消息">
+          <button class="panel-move-btn" type="button" data-move-panel="news" data-dir="up" aria-label="將最新消息上移">↑</button>
+          <button class="panel-move-btn" type="button" data-move-panel="news" data-dir="down" aria-label="將最新消息下移">↓</button>
+        </div>
+        <button class="news-toggle" id="newsToggle" type="button" aria-expanded="false">顯示新聞</button>
+      </div>
+      <div class="news-note" id="newsNote">預設隱藏，按「顯示新聞」才會載入，減少開啟時間。</div>
+      <div class="news-groups" id="newsList" hidden></div>
     </section>
   </main>
   <footer class="foot">
@@ -333,7 +373,7 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
       <button class="util-btn" id="wakeBtn" type="button" aria-pressed="true">保持螢幕：開</button>
       <button class="util-btn" id="soundTestBtn" type="button">🔊 測試提示音</button>
     </div>
-    資料來源：<a href="https://data.gov.hk/tc-data/dataset/hk-td-tis_21-etakmb" target="_blank" rel="noopener">九巴／龍運開放數據</a> · <a href="https://www.hko.gov.hk/tc/index.html" target="_blank" rel="noopener">香港天文台</a> · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo（含 ECMWF）</a><br>
+    資料來源：<a href="https://data.gov.hk/tc-data/dataset/hk-td-tis_21-etakmb" target="_blank" rel="noopener">九巴／龍運開放數據</a> · <a href="https://www.hko.gov.hk/tc/index.html" target="_blank" rel="noopener">香港天文台</a> · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a><br>
     非官方工具 · 資料僅供參考，不作任何保證 · <span id="versionTag"></span>
   </footer>
 </div>
@@ -363,13 +403,13 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
 <section class="sheet" id="weatherSheet" role="dialog" aria-modal="true" aria-labelledby="weatherSheetTitle" hidden>
   <div class="grab" aria-hidden="true"></div>
   <div class="sheet-head"><h2 id="weatherSheetTitle">天氣地點</h2><button class="close-btn" type="button" data-close-sheet aria-label="關閉">✕</button></div>
-  <div class="sheet-body"><div class="group-label">選擇逐 3 小時天氣所在地區</div><div class="district-grid" id="districtGrid"></div></div>
+  <div class="sheet-body"><div class="group-label">選擇逐小時天氣所在地區</div><div class="district-grid" id="districtGrid"></div></div>
 </section>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <noscript><p style="text-align:center;padding:24px">請開啟 JavaScript 以查看實時班次及天氣。</p></noscript>
 <script>
 'use strict';
-const VERSION='1.0.10';
+const VERSION='1.0.11';
 /* ===== config ===== */
 const API = {
   routes: 'https://data.etabus.gov.hk/v1/transport/kmb/route/',
@@ -379,14 +419,13 @@ const API = {
   eta: (id) => `https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${id}`,
   wx: (t) => `https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=${t}&lang=tc`,
   hourly: (lat, lng) => `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,weather_code&hourly=temperature_2m,precipitation_probability,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code&timezone=Asia%2FHong_Kong&forecast_days=2`,
-  alt: (lat, lng) => `https://api.open-meteo.com/v1/ecmwf?latitude=${lat}&longitude=${lng}&hourly=temperature_2m,precipitation_probability&timezone=Asia%2FHong_Kong&forecast_days=2`,
 };
 const KEYS = {
   current:'hkbus.v2.current', routes:'hkbus.v2.routes', stopMap:'hkbus.v2.stopmap',
   routePrefs:'hkbus.v2.routePrefs', stopByKey:'hkbus.v2.stopByKey',
   walk:'hkbus.v2.walk', alertRepeat:'hkbus.v2.alertRepeat',
-  pos:'hkbus.v2.pos', weather:'hkbus.v2.weather', hourly:'hkbus.v2.hourly', alt:'hkbus.v2.alt', weatherLoc:'hkbus.v2.weatherLoc',
-  panelOrder:'hkbus.v2.panelOrder',
+  pos:'hkbus.v2.pos', weather:'hkbus.v2.weather', hourly:'hkbus.v2.hourly', weatherLoc:'hkbus.v2.weatherLoc',
+  hourlyStep:'hkbus.v2.hourlyStep', panelOrder:'hkbus.v2.panelOrder',
   theme:'hkbus.v2.theme', a2hs:'hkbus.v2.a2hs',
   favRoutes:'hkbus.v2.favRoutes', favStops:'hkbus.v2.favStops', recentRoutes:'hkbus.v2.recentRoutes',
   scenes:'hkbus.v2.scenes', activeScene:'hkbus.v2.activeScene', alert:'hkbus.v2.alert', etaCache:'hkbus.v2.etaCache',
@@ -457,18 +496,18 @@ const state = {
   etas:[], etaFetchedAt:0, etaLoading:false, etaError:null, selectedBus:0,
   userPos:null, walkMin:5,
   favRoutes:[], favStops:[], recentRoutes:[], scenes:[], activeScene:null,
-  theme:'auto', weather:null, hourly:null, alt:null, weatherLoc:'auto',
-  panelOrder:['bus','weather','hourly'],
+  theme:'auto', weather:null, hourly:null, weatherLoc:'auto', hourlyStep:3,
+  panelOrder:['bus','weather','hourly','news'], newsVisible:false, news:null,
   alertOn:false, alertMax:0, alertCount:0, audioCtx:null, alertAudio:null, alertPool:[], alertIndex:0, audioUnlocked:false, dueSince:0, alertSuppressedTarget:null, wakeLock:null, wakeLockWanted:true, notifyEnabled:false, leaveNotifiedTarget:null,
 };
-let etaToken=0, wxToken=0, hourlyToken=0, toastTimer=null, alertTimer=null;
+let etaToken=0, wxToken=0, hourlyToken=0, newsToken=0, toastTimer=null, alertTimer=null;
 function readJSON(k,f){ try { const s=localStorage.getItem(k); return s?JSON.parse(s):f; } catch { return f; } }
 function writeJSON(k,v){ try { localStorage.setItem(k,JSON.stringify(v)); } catch {} }
 function saveCurrent() { writeJSON(KEYS.current,{route:state.route,bound:state.bound,serviceType:state.serviceType}); }
 function routeKey() { return `${state.route}|${state.bound}|${state.serviceType}`; }
 
 /* ===== prefs / migration ===== */
-const PANEL_IDS=['bus','weather','hourly'];
+const PANEL_IDS=['bus','weather','hourly','news'];
 function normalizePanelOrder(order) {
   const base=Array.isArray(order)?order.filter(id=>PANEL_IDS.includes(id)):[];
   const out=[];
@@ -497,7 +536,7 @@ function movePanel(id,dir) {
   if (j<0||j>=order.length) return;
   [order[i],order[j]]=[order[j],order[i]];
   applyPanelOrder(order,true);
-  const name=id==='bus'?'巴士到站':id==='weather'?'香港天氣':'未來 24 小時';
+  const name=id==='bus'?'巴士到站':id==='weather'?'香港天氣':id==='hourly'?'未來 24 小時':'最新消息';
   toast(`${name}已${dir==='up'?'上移':'下移'}`);
 }
 function purgeLegacyPrefs() {
@@ -520,6 +559,9 @@ function loadPrefs() {
   if (state.pos && Number.isFinite(state.pos.lat) && Number.isFinite(state.pos.lng)) state.userPos=state.pos;
   const wl=readJSON(KEYS.weatherLoc,'auto');
   state.weatherLoc=(wl==='auto'||DISTRICTS.some(d=>d.n===wl))?wl:'auto';
+  const hs=Number(readJSON(KEYS.hourlyStep,3));
+  state.hourlyStep=[1,2,3].includes(hs)?hs:3;
+  state.newsVisible=false;
   state.favRoutes=readJSON(KEYS.favRoutes,[])||[]; state.favStops=readJSON(KEYS.favStops,[])||[];
   state.recentRoutes=readJSON(KEYS.recentRoutes,[])||[];
   state.theme=localStorage.getItem(KEYS.theme)||'auto';
@@ -676,7 +718,7 @@ const isFavStop=(id)=>state.favStops.includes(id);
 async function bootstrap() {
   $('#versionTag').textContent='v'+VERSION;
   installIcons(); purgeLegacyPrefs(); loadPrefs(); applyTheme(state.theme); applyPanelOrder(state.panelOrder); checkA2HS();
-  bindEvents(); updateDateLabels(); renderScenes(); renderBus(); renderLeave(); renderUtilityButtons();
+  bindEvents(); updateDateLabels(); renderScenes(); renderBus(); renderLeave(); renderUtilityButtons(); renderNews();
   if (state.wakeLockWanted) requestWakeLock(true);
   await Promise.allSettled([loadRouteList(),loadStopMap(),loadWeather()]);
   ensureValidRoute(); renderBus();
@@ -687,6 +729,7 @@ async function bootstrap() {
   setInterval(()=>{ if(!document.hidden) refreshEta(); },REFRESH_ETA_MS);
   setInterval(()=>{ if(!document.hidden) loadWeather(); },REFRESH_WX_MS);
   setInterval(()=>{ if(!document.hidden) loadHourly(); },30*60*1000);
+  setInterval(()=>{ if(state.newsVisible&&!document.hidden) loadNews(true); },10*60*1000);
   document.addEventListener('visibilitychange',()=>{
     if (document.hidden) return;
     if (state.wakeLockWanted && !state.wakeLock) requestWakeLock(true);
@@ -767,6 +810,12 @@ async function loadStops() {
 }
 function renderBus() {
   const info=getRouteInfo();
+  const busLink=$('#busAppLink');
+  if (busLink) {
+    busLink.href=`https://search.kmb.hk/KMBWebSite?action=routesearch&lang=zh-hk&route=${encodeURIComponent(state.route)}`;
+    busLink.title=`開啟九巴官方路線 ${state.route}`;
+    busLink.setAttribute('aria-label',busLink.title);
+  }
   $('#routeBtn').textContent=state.route;
   $('#busTitle').textContent=info.dest_tc?`往 ${info.dest_tc}`:`路線 ${state.route}`;
   $('#busSub').textContent=info.orig_tc?`九巴／龍運 · ${info.orig_tc} → ${info.dest_tc}`:'九巴／龍運';
@@ -1232,12 +1281,6 @@ function renderWeather() {
   $('#wxUmbrella').textContent=umbrella
     ? (range.psr!=null?`☂️ 今日下雨機會 ${range.psr}% · 建議帶傘`:'☂️ 今日預報有雨 · 建議帶傘')
     : (chance!=null?`☂️ 未來 1 小時下雨機會 ${chance}%`:'今日暫時無需帶傘');
-  const ai=nearestHourIndex(state.alt);
-  const altTemp=ai>=0?Number(state.alt.hourly?.temperature_2m?.[ai]):NaN;
-  const altPop=ai>=0?Number(state.alt.hourly?.precipitation_probability?.[ai]):NaN;
-  const altParts=[Number.isFinite(altTemp)?`${Math.round(altTemp)}°`:'--°'];
-  if (Number.isFinite(altPop)) altParts.push(`雨 ${altPop}%`);
-  $('#wxAltValue').textContent=altParts.join(' · ');
   const banner=$('#warningBanner');
   if (warns.length) {
     banner.hidden=false;
@@ -1248,9 +1291,11 @@ function renderWeather() {
 }
 function renderHourly() {
   const h=state.hourly?.hourly, box=$('#wxHours');
+  const sel=$('#hourlyStep'); if (sel && sel.value!==String(state.hourlyStep)) sel.value=String(state.hourlyStep);
+  const note=$('#wxHourlyNote'); if (note) note.textContent='24 小時';
   if (!h||!Array.isArray(h.time)) { box.innerHTML='<span class="hour-empty">天氣資料載入中…</span>'; return; }
-  const start=nearestHourIndex(state.hourly), out=[];
-  for (let i=Math.max(0,start);i<h.time.length&&out.length<8;i+=3) {
+  const step=state.hourlyStep, limit=Math.ceil(24/step), start=nearestHourIndex(state.hourly), out=[];
+  for (let i=Math.max(0,start);i<h.time.length&&out.length<limit;i+=step) {
     const t=Date.parse(h.time[i]+'+08:00');
     if (!Number.isFinite(t)) continue;
     const p=Number(h.precipitation_probability?.[i]);
@@ -1299,26 +1344,80 @@ async function loadHourly() {
   const token=++hourlyToken;
   const pos=weatherPosition();
   const district=weatherDistrictName();
-  const [primary,alt]=await Promise.allSettled([
-    fetch(API.hourly(pos.lat,pos.lng),{cache:'no-store'}).then(r=>r.json()),
-    fetch(API.alt(pos.lat,pos.lng),{cache:'no-store'}).then(r=>r.json()),
-  ]);
-  if (token!==hourlyToken) return;
-  if (primary.status==='fulfilled') {
-    state.hourly={...primary.value,district,at:Date.now()}; writeJSON(KEYS.hourly,state.hourly);
+  try {
+    const j=await fetch(API.hourly(pos.lat,pos.lng),{cache:'no-store'}).then(r=>r.json());
+    if (token!==hourlyToken) return;
+    state.hourly={...j,district,at:Date.now()}; writeJSON(KEYS.hourly,state.hourly); renderWeather();
+  } catch {
+    if (token!==hourlyToken) return;
+    if (!state.hourly) renderHourlyError();
   }
-  if (alt.status==='fulfilled') {
-    state.alt=alt.value; writeJSON(KEYS.alt,state.alt);
-  }
-  if (primary.status==='fulfilled'||alt.status==='fulfilled') renderWeather();
-  else if (!state.hourly) renderHourlyError();
 }
 function renderWeatherError() {
   $('#wxRain').textContent='暫時無法取得天氣'; $('#wxTemp').textContent='--';
   $('#wxRange').textContent='--° / --°'; $('#wxUmbrella').textContent='請檢查網絡'; $('#wxHours').innerHTML='<span class="hour-empty">暫時沒有資料</span>';
-  $('#wxAltValue').textContent='暫時無法取得';
 }
 function renderHourlyError() { const box=$('#wxHours'); if (!box.textContent.trim()||box.textContent.includes('載入中')) box.innerHTML='<span class="hour-empty">暫時沒有逐小時資料</span>'; }
+
+/* ===== news ===== */
+async function fetchNewsJson(url,ms=9000) {
+  const c=new AbortController(), t=setTimeout(()=>c.abort(),ms);
+  try {
+    const r=await fetch(url,{cache:'no-store',signal:c.signal});
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    return await r.json();
+  } finally { clearTimeout(t); }
+}
+function newsDate(v) { return v?String(v).slice(0,10):''; }
+function newsRow(item,source) {
+  const title=String(item?.title||'').trim(), url=String(item?.url||item?.link||'');
+  if (!title||!url) return '';
+  return `<li class="news-item"><span class="news-date">${esc(newsDate(item.date||item.pubDate))}</span><a href="${esc(url)}" target="_blank" rel="noopener">${esc(title)}</a><span class="news-source">${esc(source)}</span></li>`;
+}
+function paintNews(data) {
+  const box=$('#newsList'); if (!box) return;
+  const groups=[
+    {name:'九巴最新消息',home:'https://www.kmb.hk/news.html',source:'九巴',items:data?.kmb,fresh:data?.kmbAt?`更新 ${esc(newsDate(data.kmbAt))}`:''},
+    {name:'政府新聞網',home:'https://www.news.gov.hk/tc/index.html',source:'政府',items:data?.gov},
+    {name:'BBC 中文',home:'https://www.bbc.com/zhongwen/trad',source:'BBC',items:data?.bbc},
+  ];
+  box.innerHTML=groups.map(g=>{
+    const rows=(Array.isArray(g.items)?g.items:[]).slice(0,3).map(i=>newsRow(i,g.source)).filter(Boolean).join('');
+    const fresh=g.fresh?`<span class="news-fresh">${g.fresh}</span>`:'';
+    return `<div class="news-group"><div class="news-group-head"><a href="${esc(g.home)}" target="_blank" rel="noopener">${esc(g.name)} ↗</a>${fresh}</div><ul class="news-list">${rows||'<li class="news-empty">暫時沒有資料</li>'}</ul></div>`;
+  }).join('')+`<div class="news-credit">來源：<a href="https://www.kmb.hk/news.html" target="_blank" rel="noopener">九巴</a> · <a href="https://www.news.gov.hk/tc/index.html" target="_blank" rel="noopener">政府新聞網</a> · <a href="https://www.bbc.com/zhongwen/trad" target="_blank" rel="noopener">BBC 中文</a> · 非官方整合，資料僅供參考</div>`;
+}
+function renderNews() {
+  const box=$('#newsList'), note=$('#newsNote'), btn=$('#newsToggle'); if (!box||!note||!btn) return;
+  box.hidden=!state.newsVisible; note.hidden=state.newsVisible;
+  btn.textContent=state.newsVisible?'隱藏新聞':'顯示新聞';
+  btn.setAttribute('aria-expanded',String(state.newsVisible));
+  if (!state.newsVisible) { newsToken++; return; }
+  if (state.news) { paintNews(state.news); return; }
+  box.hidden=false; box.innerHTML='<div class="news-loading">正在載入最新消息…</div>';
+  loadNews();
+}
+async function loadNews(force=false) {
+  if (!state.newsVisible) return;
+  if (!force && state.news && Date.now()-(state.news.at||0)<10*60*1000) { paintNews(state.news); return; }
+  const token=++newsToken;
+  const rss=(f)=>'https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(f);
+  const [kmb,gov,bbc]=await Promise.allSettled([
+    fetchNewsJson('./news-kmb.json?t='+Date.now(),8000),
+    fetchNewsJson(rss('https://news.gov.hk/tc/common/html/ticker.rss.xml'),9000),
+    fetchNewsJson(rss('https://feeds.bbci.co.uk/zhongwen/trad/rss.xml'),9000),
+  ]);
+  if (token!==newsToken||!state.newsVisible) return;
+  state.news={
+    at:Date.now(),
+    kmbAt:kmb.status==='fulfilled'?(kmb.value.updatedAt||''):'',
+    kmb:kmb.status==='fulfilled'?(kmb.value.items||[]):null,
+    gov:gov.status==='fulfilled'?(gov.value.items||[]):null,
+    bbc:bbc.status==='fulfilled'?(bbc.value.items||[]):null,
+  };
+  paintNews(state.news);
+}
+function toggleNews() { state.newsVisible=!state.newsVisible; renderNews(); }
 
 /* ===== date labels / toast ===== */
 function updateDateLabels() { $('#heroDate').textContent=dateFmt.format(new Date()); }
@@ -1338,9 +1437,13 @@ function bindEvents() {
   $('#wxLoc').addEventListener('click',openWeatherSheet);
   $('#refreshBtn').addEventListener('click',()=>{ refreshEta(); toast('正在更新班次…'); });
   if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-    $('#busAppLink')?.addEventListener('click',(e)=>{ e.preventDefault(); location.href='itms-apps://itunes.apple.com/app/id1170003707'; });
     $('#wxAppLink')?.addEventListener('click',(e)=>{ e.preventDefault(); location.href='itms-apps://itunes.apple.com/app/id361319719'; });
   }
+  $('#hourlyStep').addEventListener('change',(e)=>{
+    const n=Number(e.target.value); state.hourlyStep=[1,2,3].includes(n)?n:3;
+    writeJSON(KEYS.hourlyStep,state.hourlyStep); renderHourly(); toast(`逐小時預報：每 ${state.hourlyStep} 小時`);
+  });
+  $('#newsToggle').addEventListener('click',toggleNews);
   $('#wakeBtn').addEventListener('click',toggleWakeLock);
   $('#notifyBtn').addEventListener('click',toggleNotify);
   $('#soundTestBtn').addEventListener('click',()=>{
