@@ -71,7 +71,7 @@ button,input{font-family:inherit} button{cursor:pointer;color:inherit} button:ac
 .theme-btn{width:28px;height:28px;font-size:12px}
 .theme-btn:active,.mini-btn:active{box-shadow:var(--in-sm)}
 .theme-btn[aria-pressed="true"]{box-shadow:var(--in-sm);color:var(--accent)}
-body.simple-mode .scenes,body.simple-mode .panel-moves,body.simple-mode .alert-config,body.simple-mode .route-news,body.simple-mode .route-news-list,body.simple-mode .a2hs{display:none!important}
+body.simple-mode .scenes,body.simple-mode .panel-moves,body.simple-mode .alert-config,body.simple-mode .route-news,body.simple-mode .route-news-list,body.simple-mode .a2hs,body.simple-mode #markLeftBtn{display:none!important}
 .a2hs{display:flex;align-items:center;gap:8px;margin-top:5px;padding:6px 9px;border-radius:14px;background:var(--surface);box-shadow:var(--out-sm);font-size:11px;color:var(--ink2);line-height:1.4}
 .a2hs b{color:var(--ink)} .a2hs button{margin-left:auto;flex:none;border:0;border-radius:999px;padding:4px 10px;background:var(--surface);box-shadow:var(--out-xs);color:var(--ink3);font-size:11px}
 .utility-bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
@@ -136,16 +136,19 @@ body.simple-mode .scenes,body.simple-mode .panel-moves,body.simple-mode .alert-c
 .eta-area{min-height:92px}
 .ride-panel{border-radius:18px;padding:11px;background:var(--surface);box-shadow:var(--in-sm);display:flex;align-items:center;justify-content:space-between;gap:10px}
 .ride-panel.due{box-shadow:var(--in-sm),inset 0 0 0 1px rgba(59,111,224,.42)}
-.ride-main{min-width:0;display:flex;flex-direction:column;gap:3px}
-.ride-cap{font-size:10px;color:var(--ink3)}
+.ride-main{min-width:0;flex:1;display:flex;flex-direction:column;gap:5px}
+.ride-line{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.ride-state{font-size:10px;font-weight:750;padding:4px 9px;border-radius:999px;background:var(--surface);box-shadow:var(--out-xs);color:var(--ink2);white-space:nowrap;align-self:center}
 .ride-count{font-size:34px;font-weight:750;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums;white-space:nowrap}
-.ride-panel.near .ride-count{color:var(--amber)} .ride-panel.soon .ride-count{color:var(--danger)}
-.ride-panel.due .ride-count{font-size:23px;color:var(--danger)}
+.ride-unit{font-size:11px;font-weight:650;color:var(--ink3)}
+.ride-clock{font-size:11.5px;color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ride-tags{display:inline-flex;gap:4px;flex-wrap:wrap;align-self:center}
+.ride-panel.near .ride-count{color:var(--amber)} .ride-panel.soon .ride-count,.ride-panel.due .ride-count{color:var(--accent)}
+.ride-panel.near .ride-state{color:var(--amber);background:rgba(217,138,0,.14)}
+.ride-panel.soon .ride-state,.ride-panel.due .ride-state{color:var(--accent);background:rgba(59,111,224,.14)}
 .ride-note{font-size:11px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;font-variant-numeric:tabular-nums}
-.ride-side{flex:none;text-align:right;display:flex;flex-direction:column;gap:3px;align-items:flex-end}
-.ride-eta b{font-size:25px;font-weight:750;font-variant-numeric:tabular-nums}
-.ride-eta em{font-style:normal;font-size:10px;color:var(--ink3);margin-left:3px}
-.ride-time{font-size:11px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.ride-action{flex:none;min-height:44px;border:0;border-radius:999px;padding:11px 18px;background:var(--surface);box-shadow:var(--out-sm);color:var(--accent);font-size:13px;font-weight:800;white-space:nowrap}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .tag{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:999px;background:rgba(217,138,0,.14);color:var(--amber)}
 .ride-status{margin:10px 2px 0;font-size:11px;color:var(--ink3);line-height:1.5}
 .link-btn{border:0;background:none;color:var(--accent);font-size:11px;font-weight:700;padding:0 2px;text-decoration:underline}
@@ -156,6 +159,8 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
 .ride-row .m{font-weight:750;font-variant-numeric:tabular-nums}.ride-row .mu{font-size:10px;font-weight:500;color:var(--ink3)}
 .alert-bar{display:flex;align-items:center;gap:10px;margin-top:12px;padding:12px 14px;border-radius:14px;background:var(--surface);box-shadow:var(--in-sm),inset 3px 0 0 var(--danger);font-size:13px}
 .alert-bar button{margin-left:auto;flex:none;border:0;border-radius:999px;padding:12px 22px;min-height:44px;background:var(--surface);box-shadow:var(--out-sm);color:var(--danger);font-size:14px;font-weight:800;white-space:nowrap}
+.alert-bar [data-action="mark-left"]{padding:10px 14px;font-size:12px;opacity:.85}
+.alert-bar [data-action="stop-alert"]{margin-left:0;padding:13px 24px;font-size:15px}
 .alert-bar[hidden]{display:none}
 .alert-bar.floating{position:fixed;top:calc(8px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:70;width:max-content;max-width:94vw;box-shadow:0 10px 30px rgba(0,0,0,.25),inset 3px 0 0 var(--danger)}
 .leave-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
@@ -258,7 +263,7 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
 .foot a{color:var(--ink3);text-decoration:underline}
 .footer-utilities{margin:0 0 10px}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
-@media(max-width:380px){.ride-count{font-size:30px}.ride-eta b{font-size:20px}.ride-panel{padding:10px}.card{padding:12px}}
+@media(max-width:380px){.ride-count{font-size:30px}.ride-panel{padding:10px}.card{padding:12px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
 </style>
 </head>
@@ -318,7 +323,7 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
         </button>
         <button class="icon-btn loc-main" id="locMainBtn" type="button" aria-label="用位置尋找最近車站" title="用位置尋找最近車站">📍</button>
       </div>
-      <div id="etaArea" class="eta-area" aria-live="polite"></div>
+      <div id="etaArea" class="eta-area" aria-live="off"></div>
       <div class="leave-bar">
         <div class="leave-walk" id="leaveWalk">
           <span>預留步行時間</span>
@@ -460,7 +465,7 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
 <noscript><p style="text-align:center;padding:24px">請開啟 JavaScript 以查看實時班次及天氣。</p></noscript>
 <script>
 'use strict';
-const VERSION='1.0.28';
+const VERSION='1.0.29';
 /* ===== config ===== */
 const API = {
   routes: 'https://data.etabus.gov.hk/v1/transport/kmb/route/',
@@ -1136,13 +1141,11 @@ function etaStatusHTML() {
 }
 function renderEta() {
   const bus=state.etas[state.selectedBus]||state.etas[0];
-  const side=(bus)
-    ? `<div class="ride-side"><span class="ride-eta"><b data-eta-min="${bus.t}">--</b><em>分鐘到站</em></span><span class="ride-time">${timeOf(bus.t)} 到站</span>${bus.rmk?`<span class="tag">${esc(bus.rmk)}</span>`:''}</div>`
-    : '';
+  const tags=(bus?`${state.selectedBus===0?'<span class="tag">下一班</span>':''}${bus.rmk?`<span class="tag">${esc(bus.rmk)}</span>`:''}`:'');
   const rows=(state.etas.length)
     ? `<div class="ride-rows" role="group" aria-label="所有班次">${state.etas.map((e,i)=>`<div class="ride-row${i===state.selectedBus?' selected':''}" role="button" tabindex="0" data-eta-pick="${i}" aria-pressed="${i===state.selectedBus}"><span class="m" data-eta-row="${e.t}">--</span><span class="mu">分鐘</span><span class="t">(${timeOf(e.t)})</span>${i===0?'<span class="tag">下一班</span>':''}${e.rmk?`<span class="tag">${esc(e.rmk)}</span>`:''}</div>`).join('')}</div>`
     : '';
-  $('#etaArea').innerHTML=`<div class="ride-panel" id="ridePanel"><div class="ride-main"><span class="ride-cap">🚪 出門口倒數</span><strong class="ride-count" id="leaveCountdown">--:--</strong><span class="ride-note" id="leaveSub">—</span></div>${side}</div>${etaStatusHTML()}${rows}`;
+  $('#etaArea').innerHTML=`<div class="ride-panel" id="ridePanel"><div class="ride-main"><div class="ride-line"><span class="ride-state" id="leaveState">🚪 出門</span><strong class="ride-count" id="leaveCountdown">--:--</strong><span class="ride-unit" id="leaveUnit">分鐘</span><span class="ride-clock" id="leaveClock">—</span><span class="ride-tags" id="leaveTags">${tags}</span></div><span class="ride-note" id="leaveSub">—</span></div><button class="ride-action" id="leaveAction" type="button" data-action="mark-left">出門了</button></div><span class="sr-only" id="leaveA11y" aria-live="polite"></span>${etaStatusHTML()}${rows}`;
   $('#alertBar').hidden=!state.alertOn;
   $('#etaUpdated').textContent=state.etaFetchedAt
     ? (state.etaError?`上次更新 ${timeWithSec(state.etaFetchedAt)}`:`更新於 ${timeWithSec(state.etaFetchedAt)}`)
@@ -1150,11 +1153,6 @@ function renderEta() {
 }
 function tickEtas() {
   const now=Date.now();
-  $$('[data-eta-min]').forEach(el=>{
-    const secs=Math.ceil((Number(el.dataset.etaMin)-now)/1000), em=el.nextElementSibling;
-    if (secs<=25) { el.textContent='即時'; if(em) em.textContent='到站'; }
-    else { el.textContent=Math.ceil(secs/60); if(em) em.textContent='分鐘到站'; }
-  });
   $$('[data-eta-row]').forEach(el=>{
     const secs=Math.ceil((Number(el.dataset.etaRow)-now)/1000), mu=el.nextElementSibling;
     if (secs<=25) { el.textContent='即時'; if(mu) mu.textContent=''; }
@@ -1214,13 +1212,15 @@ function markLeft() {
 }
 function tickLeave() {
   const info=leaveInfo(), panel=$('#ridePanel'), count=$('#leaveCountdown'), note=$('#leaveSub');
+  const stateEl=$('#leaveState'), unitEl=$('#leaveUnit'), clockEl=$('#leaveClock'), a11y=$('#leaveA11y');
   if (state.arrivalPhase && state.arrivalPhaseTarget!=null && info.target!==state.arrivalPhaseTarget) {
     state.arrivalPhase=false; state.arrivalPhaseTarget=null;
   }
   if (!panel||!count) return;
+  let phase='wait', digits='--:--', clock='—', spoken='尚未有班次資料';
   if (info.target==null||!Number.isFinite(info.target)) {
     state.dueSince=0;
-    panel.classList.remove('due','soon','near'); count.textContent='--:--';
+    panel.classList.remove('due','soon','near');
   } else {
     const diff=info.target-Date.now(), due=diff<=0||state.arrivalPhase;
     if (due) {
@@ -1230,7 +1230,16 @@ function tickLeave() {
       panel.classList.toggle('due',armed); panel.classList.toggle('soon',!armed);
       panel.classList.remove('near');
       const prepMs=Math.max(0,15000-(Date.now()-state.dueSince));
-      count.textContent=!armed?`準備出發 ${fmtCountdown(prepMs)}`:(arrivalDiff>0?`到站 ${fmtCountdown(arrivalDiff)}`:'已到站');
+      if (!armed) {
+        phase='prep'; digits=fmtCountdown(prepMs); clock=`(${timeOf(info.target)})`;
+        spoken=`準備出發 · 出門 ${timeOf(info.target)} · 到站 ${timeOf(info.arrival)}`;
+      } else if (arrivalDiff>0) {
+        phase='arrive'; digits=fmtCountdown(arrivalDiff); clock=`(${timeOf(info.arrival)})`;
+        spoken=`到站倒數 · 到站 ${timeOf(info.arrival)}`;
+      } else {
+        phase='arrived'; digits='00:00'; clock=`(${timeOf(info.arrival)})`;
+        spoken=`已到站 · ${timeOf(info.arrival)}`;
+      }
       const barText=$('#alertBarText'); if (barText) barText.textContent=armed?'🔔 已出門 · 到站倒數中（聲音／震動）':'🔔 出門提示持續中（聲音／震動）';
       if (state.alertSuppressedTarget!==info.target) startLeaveAlert();
     } else {
@@ -1240,10 +1249,16 @@ function tickLeave() {
       panel.classList.remove('due');
       panel.classList.toggle('soon',diff<=60000);
       panel.classList.toggle('near',diff>60000&&diff<=5*60000);
-      count.textContent=fmtCountdown(diff);
+      phase='leave'; digits=fmtCountdown(diff); clock=`(${timeOf(info.target)})`;
+      spoken=`出門倒數 · 出門 ${timeOf(info.target)} · 到站 ${timeOf(info.arrival)}`;
     }
   }
+  count.textContent=digits;
+  if (stateEl) stateEl.textContent=({wait:'🚪 待班次',prep:'🚪 準備',leave:'🚪 出門',arrive:'🚌 到站',arrived:'🚌 已到站'})[phase];
+  if (unitEl) unitEl.textContent=(phase==='wait'||phase==='arrived')?'':'分鐘';
+  if (clockEl) clockEl.textContent=clock;
   if (note) note.textContent=info.sub;
+  if (a11y && a11y.textContent!==spoken) a11y.textContent=spoken;
   updateBgMetadata(info);
 }
 function adjustWalk(delta) {
@@ -1860,6 +1875,7 @@ function bindEvents() {
     if (!act) return;
     if (act.dataset.action==='retry') refreshEta();
     if (act.dataset.action==='stop-alert') stopLeaveAlert();
+    if (act.dataset.action==='mark-left') markLeft();
   });
   $('#etaArea').addEventListener('keydown',(e)=>{
     if (e.key!=='Enter' && e.key!==' ') return;
