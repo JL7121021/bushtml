@@ -452,7 +452,7 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
 <noscript><p style="text-align:center;padding:24px">請開啟 JavaScript 以查看實時班次及天氣。</p></noscript>
 <script>
 'use strict';
-const VERSION='1.0.17';
+const VERSION='1.0.18';
 /* ===== config ===== */
 const API = {
   routes: 'https://data.etabus.gov.hk/v1/transport/kmb/route/',
@@ -709,7 +709,19 @@ async function toggleNotify() {
   if (perm==='default') { try { perm=await Notification.requestPermission(); } catch { perm='denied'; } }
   if (perm!=='granted') { state.notifyEnabled=false; renderUtilityButtons(); toast(perm==='denied'?'通知權限已被封鎖':'未授權通知'); return; }
   state.notifyEnabled=true; renderUtilityButtons(); tickLeave(); toast('已播放測試音 · 出門通知及提示音已開啟（下次須重新開啟）');
-}function cycleTheme() { applyTheme(state.theme==='auto'?'light':state.theme==='light'?'dark':'auto'); }
+}
+async function autoNotifyOn() {
+  // 改提前分鐘通常係一次觸控，趁機自動開通知同背景入口
+  if (startBgAudio(true)) { state.bgAuto=true; writeJSON(KEYS.bgAuto,true); }
+  if (state.notifyEnabled) return;
+  if (!('Notification' in window) || Notification.permission==='denied') return;
+  let perm=Notification.permission;
+  if (perm==='default') { try { perm=await Notification.requestPermission(); } catch { return; } }
+  if (perm!=='granted') return;
+  state.notifyEnabled=true; renderUtilityButtons(); tickLeave();
+  toast('已自動開啟出門通知');
+}
+function cycleTheme() { applyTheme(state.theme==='auto'?'light':state.theme==='light'?'dark':'auto'); }
 function checkA2HS() {
   const standalone = navigator.standalone===true || matchMedia('(display-mode: standalone)').matches;
   $('#a2hsTip').hidden = standalone || readJSON(KEYS.a2hs,false)===true;
@@ -1195,7 +1207,7 @@ function tickLeave() {
 }
 function adjustWalk(delta) {
   const next=clampWalk(state.walkMin+delta); if(next===state.walkMin) return;
-  state.walkMin=next; writeJSON(KEYS.walk,next); renderLeave();
+  state.walkMin=next; writeJSON(KEYS.walk,next); renderLeave(); autoNotifyOn();
 }
 function icsText(v) { return String(v||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\r?\n/g,'\\n'); }
 function addCalendarReminder() {
@@ -1229,7 +1241,7 @@ function ensureAudio() {
     return state.audioCtx;
   } catch { return null; }
 }
-function makeToneURI(notes, stepDur=.18) {
+function makeToneURI(notes, stepDur=.18, amp=14000) {
   try {
     const rate=8000, dur=stepDur*notes.length, n=Math.floor(rate*dur), buf=new ArrayBuffer(44+n*2), v=new DataView(buf);
     const put=(o,s)=>{ for(let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); };
@@ -1240,7 +1252,7 @@ function makeToneURI(notes, stepDur=.18) {
     for(let i=0;i<n;i++){
       const t=i/rate, step=Math.min(notes.length-1,Math.floor(t/stepDur)), f=notes[step], local=t-step*stepDur;
       const env=Math.max(0,1-local/stepDur);
-      v.setInt16(44+i*2,Math.sin(2*Math.PI*f*t)*env*14000,true);
+      v.setInt16(44+i*2,Math.sin(2*Math.PI*f*t)*env*amp,true);
     }
     const bytes=new Uint8Array(buf); let s='';
     for(let i=0;i<bytes.length;i+=8192) s+=String.fromCharCode.apply(null,bytes.subarray(i,i+8192));
@@ -1248,13 +1260,14 @@ function makeToneURI(notes, stepDur=.18) {
   } catch { return ''; }
 }
 function makeBeepURI() { return makeToneURI([880,660],.18); }
+function makeAlertURI() { return makeToneURI([880,660],.16,18500); }
 function makeChimeURI() { return makeToneURI([523.25,659.25,783.99],.12); }
 function initAlertAudio() {
   try {
     if (!state.alertAudio && window.Audio) {
-      const uri=makeBeepURI();
+      const uri=makeAlertURI();
       for(let i=0;i<3;i++){
-        const a=new Audio(uri); a.preload='auto'; a.setAttribute('playsinline','');
+        const a=new Audio(uri); a.preload='auto'; a.volume=1; a.setAttribute('playsinline','');
         state.alertPool.push(a);
       }
       state.alertAudio=state.alertPool[0];
@@ -1269,7 +1282,7 @@ function beepContext() {
     [880,660].forEach((freq,i)=>{
       const t=now+i*.16, o=ctx.createOscillator(), g=ctx.createGain();
       o.type='sine'; o.frequency.setValueAtTime(freq,t);
-      g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.22,t+.02);
+      g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.34,t+.02);
       g.gain.exponentialRampToValueAtTime(.0001,t+.14);
       o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+.16);
     });
@@ -1338,27 +1351,30 @@ function updateBgMetadata(info) {
     info=info||leaveInfo();
     const dest=getRouteInfo().dest_tc||'';
     const route=`${state.route}${dest?' 往 '+dest:''}`;
-    let title='巴士天氣助手', artist='等待班次資料…';
+    let title='巴士天氣助手', artist='等待班次資料…', icon='bus-icon.png';
     if (state.etaError) artist='未能取得班次，請稍後重試';
     else if (info.target!=null && Number.isFinite(info.target)) {
       const diff=info.target-Date.now();
+      const arrival=timeOf(info.target+state.walkMin*60000);
       if (diff>0) {
         const mins=Math.ceil(diff/60000);
-        title=mins>1?`還有 ${mins} 分鐘出門`:'即將出門';
-        artist=`${route} · ${timeOf(info.target)} 出門`;
+        title=`還有 ${mins} 分鐘出門`;
+        artist=`🚪 ${timeOf(info.target)} 出門 · 🚌 ${arrival} 到站 · ${route}`;
       } else {
         const armed=(Date.now()-(state.dueSince||Date.now()))>=15000;
         title=armed?'出門口！':'準備出發';
-        artist=`${route} · ${timeOf(info.target)} 到站`;
+        artist=`🚪 ${timeOf(info.target)} 出門 · 🚌 ${arrival} 到站 · ${route}`;
+        icon=armed?'leave-icon.png':'arrive-icon.png';
       }
     }
-    const album=state.alertOn?'提示響鬧中':'九巴／龍運到站';
-    const key=title+'|'+artist+'|'+album;
+    if (state.alertOn) icon='leave-icon.png';
+    const album=state.alertOn?'🔔 提示響鬧中':'🚌 九巴／龍運到站';
+    const key=title+'|'+artist+'|'+album+'|'+icon;
     if (key!==state.bgMetaKey) {
       state.bgMetaKey=key;
       const meta=new MediaMetadata({
         title, artist, album,
-        artwork:[{src:new URL('./bus-icon.png',location.href).href,sizes:'512x512',type:'image/png'}]
+        artwork:[{src:new URL('./'+icon,location.href).href,sizes:'512x512',type:'image/png'}]
       });
       // iOS 會快取 metadata；先清空再重設，強制動態島／鎖屏刷新
       try { navigator.mediaSession.metadata=null; } catch {}
@@ -1442,7 +1458,7 @@ function startLeaveAlert() {
       stopLeaveAlert(true,true); toast(`提示已完成 ${state.alertMax} 次`); return;
     }
     state.alertCount++; beep(); buzz();
-  },3000);
+  },1500);
   renderEta(); tickLeave(); toast('出門提示已開啟 · 按「停止提示」關閉');
 }
 function stopLeaveAlert(suppress=true, silent=false) {
@@ -1712,6 +1728,7 @@ function bindEvents() {
     try { if (state.bgAudioEl.paused) { const p=state.bgAudioEl.play(); if(p&&p.catch) p.catch(()=>{}); } } catch {}
   });
   window.addEventListener('pagehide',()=>autoBgAudioStart());
+  document.addEventListener('pointerdown',()=>{ if (state.bgAuto) startBgAudio(true); },{passive:true});
   $('#soundTestBtn').addEventListener('click',()=>{
     unlockAudio(); playTestSound(); buzz();
     toast(navigator.vibrate?'已播放測試提示音及震動':'已播放測試提示音（此瀏覽器不支援震動）');
@@ -1739,7 +1756,7 @@ function bindEvents() {
   });
   $$('[data-walk]').forEach(b=>b.addEventListener('click',()=>{
     const n=Number(b.dataset.walk); if(!Number.isFinite(n)) return;
-    state.walkMin=clampWalk(n); writeJSON(KEYS.walk,state.walkMin); renderLeave();
+    state.walkMin=clampWalk(n); writeJSON(KEYS.walk,state.walkMin); renderLeave(); autoNotifyOn();
   }));
   $('#calendarBtn').addEventListener('click',addCalendarReminder);
   $('#etaArea').addEventListener('click',(e)=>{
