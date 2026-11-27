@@ -168,6 +168,12 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
 .alert-config select{border:0;border-radius:999px;padding:6px 10px;background:var(--surface);box-shadow:var(--out-xs);color:var(--ink);font-size:11px;font-weight:650;-webkit-appearance:none}
 .lead-presets{display:inline-flex;align-items:center;gap:5px}.lead-presets button{border:0;border-radius:999px;padding:6px 9px;background:var(--surface);box-shadow:var(--out-xs);color:var(--ink2);font-size:11px;font-weight:650}
 .lead-presets button.active{box-shadow:var(--in-sm);color:var(--accent)}
+.lead-presets .lead-edit{padding:6px 8px;color:var(--accent);font-size:12px}
+.preset-inputs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:6px 0 12px}
+.preset-inputs input{width:100%;min-width:0;padding:10px 4px;border:0;border-radius:12px;background:var(--surface);box-shadow:var(--in-sm);color:var(--ink);font-size:15px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;outline:none}
+.preset-save{width:100%;border:0;border-radius:14px;padding:12px;background:var(--surface);box-shadow:var(--out-sm);color:var(--accent);font-size:13px;font-weight:750}
+.preset-save:active{box-shadow:var(--in-sm)}
+.preset-note{font-size:10px;color:var(--ink3);line-height:1.5;margin:9px 0 0}
 .eta-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;padding-top:7px;border-top:1px solid var(--line);font-size:10.5px;color:var(--ink3)}
 .auto-tag{display:inline-flex;align-items:center;gap:5px}.auto-tag i{width:5px;height:5px;border-radius:50%;background:var(--green);animation:fade 2.4s infinite}@keyframes fade{50%{opacity:.3}}
 
@@ -334,6 +340,7 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
           <button type="button" data-walk="15">15</button>
           <button type="button" data-walk="20">20</button>
           <span>分鐘</span>
+          <button class="lead-edit" id="walkEditBtn" type="button" aria-label="自訂提前分鐘" title="自訂提前分鐘">✎</button>
         </div>
       </div>
       <div class="eta-foot"><span id="etaUpdated">—</span><span class="auto-tag"><i></i>自動更新 · <button class="link-btn" id="calendarBtn" type="button">📅 加入行事曆</button></span></div>
@@ -425,11 +432,26 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
   <div class="sheet-head"><h2 id="weatherSheetTitle">天氣地點</h2><button class="close-btn" type="button" data-close-sheet aria-label="關閉">✕</button></div>
   <div class="sheet-body"><div class="group-label">選擇逐小時天氣所在地區</div><div class="district-grid" id="districtGrid"></div></div>
 </section>
+<section class="sheet" id="walkSheet" role="dialog" aria-modal="true" aria-labelledby="walkSheetTitle" hidden>
+  <div class="grab" aria-hidden="true"></div>
+  <div class="sheet-head"><h2 id="walkSheetTitle">自訂提前分鐘</h2><button class="close-btn" type="button" data-close-sheet aria-label="關閉">✕</button></div>
+  <div class="sheet-body">
+    <div class="group-label">四個快捷按鈕（1–30 分鐘）</div>
+    <div class="preset-inputs">
+      <input id="walkPreset0" type="number" min="1" max="30" inputmode="numeric" aria-label="第一個提前分鐘">
+      <input id="walkPreset1" type="number" min="1" max="30" inputmode="numeric" aria-label="第二個提前分鐘">
+      <input id="walkPreset2" type="number" min="1" max="30" inputmode="numeric" aria-label="第三個提前分鐘">
+      <input id="walkPreset3" type="number" min="1" max="30" inputmode="numeric" aria-label="第四個提前分鐘">
+    </div>
+    <button class="preset-save" id="walkPresetSave" type="button">儲存</button>
+    <p class="preset-note">按「儲存」後會記住設定，下次開啟繼續使用。直接關閉或點背景即取消。</p>
+  </div>
+</section>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <noscript><p style="text-align:center;padding:24px">請開啟 JavaScript 以查看實時班次及天氣。</p></noscript>
 <script>
 'use strict';
-const VERSION='1.0.13';
+const VERSION='1.0.14';
 /* ===== config ===== */
 const API = {
   routes: 'https://data.etabus.gov.hk/v1/transport/kmb/route/',
@@ -444,7 +466,7 @@ const API = {
 const KEYS = {
   current:'hkbus.v2.current', routes:'hkbus.v2.routes', stopMap:'hkbus.v2.stopmap',
   routePrefs:'hkbus.v2.routePrefs', stopByKey:'hkbus.v2.stopByKey',
-  walk:'hkbus.v2.walk', alertRepeat:'hkbus.v2.alertRepeat',
+  walk:'hkbus.v2.walk', walkPresets:'hkbus.v2.walkPresets', alertRepeat:'hkbus.v2.alertRepeat',
   pos:'hkbus.v2.pos', weather:'hkbus.v2.weather', hourly:'hkbus.v2.hourly', weatherLoc:'hkbus.v2.weatherLoc',
   hourlyStep:'hkbus.v2.hourlyStep', routeNews:'hkbus.v2.routeNews', panelOrder:'hkbus.v2.panelOrder',
   theme:'hkbus.v2.theme', a2hs:'hkbus.v2.a2hs',
@@ -515,7 +537,7 @@ const state = {
   routeList:[], routeAt:0, stopMap:{}, stopMapReady:false,
   stops:[], stopId:null, stopByKey:{}, routePrefs:{}, stopsError:null,
   etas:[], etaFetchedAt:0, etaLoading:false, etaError:null, selectedBus:0,
-  userPos:null, walkMin:5,
+  userPos:null, walkMin:5, walkPresets:[5,10,15,20],
   favRoutes:[], favStops:[], recentRoutes:[], scenes:[], activeScene:null,
   theme:'auto', weather:null, hourly:null, weatherLoc:'auto', hourlyStep:3,
   panelOrder:['bus','weather','hourly','news'], newsVisible:false, news:null,
@@ -576,6 +598,8 @@ function loadPrefs() {
   state.routePrefs=readJSON(KEYS.routePrefs,{}) || {};
   state.stopByKey=readJSON(KEYS.stopByKey,{}) || state.stopByKey;
   const walk=readJSON(KEYS.walk,null); if (Number.isFinite(walk)) state.walkMin=clampWalk(walk);
+  const wp=readJSON(KEYS.walkPresets,null);
+  if (Array.isArray(wp)&&wp.length===4) state.walkPresets=wp.map(n=>clampWalk(n));
   const ar=Number(readJSON(KEYS.alertRepeat,0)); state.alertMax=[0,3,5,10].includes(ar)?ar:0;
   state.pos=readJSON(KEYS.pos,null);
   if (state.pos && Number.isFinite(state.pos.lat) && Number.isFinite(state.pos.lng)) state.userPos=state.pos;
@@ -742,7 +766,7 @@ const isFavStop=(id)=>state.favStops.includes(id);
 async function bootstrap() {
   $('#versionTag').textContent='v'+VERSION;
   installIcons(); purgeLegacyPrefs(); loadPrefs(); applyTheme(state.theme); applyPanelOrder(state.panelOrder); checkA2HS();
-  bindEvents(); updateDateLabels(); renderScenes(); renderBus(); renderLeave(); renderUtilityButtons(); renderNews();
+  bindEvents(); updateDateLabels(); renderScenes(); renderBus(); renderWalkPresets(); renderLeave(); renderUtilityButtons(); renderNews();
   if (state.wakeLockWanted) requestWakeLock(true);
   await Promise.allSettled([loadRouteList(),loadStopMap(),loadWeather()]);
   ensureValidRoute(); renderBus(); loadRouteNews();
@@ -1099,6 +1123,27 @@ function tickEtas() {
 
 /* ===== leave countdown ===== */
 function clampWalk(n){ return Math.min(30,Math.max(1,Math.round(Number(n)||5))); }
+function renderWalkPresets() {
+  $$('[data-walk]').forEach((b,i)=>{
+    const n=state.walkPresets[i]; if (!Number.isFinite(n)) return;
+    b.dataset.walk=String(n); b.textContent=String(n);
+  });
+}
+function openWalkSheet() {
+  for (let i=0;i<4;i++) { const el=$('#walkPreset'+i); if (el) el.value=state.walkPresets[i]; }
+  openSheet($('#walkSheet'));
+}
+function saveWalkPresets() {
+  const vals=[];
+  for (let i=0;i<4;i++) { const el=$('#walkPreset'+i); vals.push(clampWalk(el?el.value:0)); }
+  const uniq=Array.from(new Set(vals)).sort((a,b)=>a-b);
+  const fallback=[5,10,15,20].filter(n=>!uniq.includes(n));
+  while (uniq.length<4 && fallback.length) uniq.push(fallback.shift());
+  state.walkPresets=uniq.slice(0,4).sort((a,b)=>a-b);
+  writeJSON(KEYS.walkPresets,state.walkPresets);
+  renderWalkPresets(); renderLeave(); closeSheet();
+  toast(`提前按鈕：${state.walkPresets.join(' / ')} 分鐘`);
+}
 function fmtCountdown(ms) {
   const t=Math.max(0,Math.floor(ms/1000));
   return t>=3600?`${Math.floor(t/3600)}:${pad2(Math.floor(t/60)%60)}:${pad2(t%60)}`:`${pad2(Math.floor(t/60))}:${pad2(t%60)}`;
@@ -1552,6 +1597,8 @@ function bindEvents() {
   $('#serviceTabs').addEventListener('click',(e)=>{ const b=e.target.closest('[data-service]'); if(b) setServiceType(b.dataset.service); });
   $('#walkMinus').addEventListener('click',()=>adjustWalk(-1));
   $('#walkPlus').addEventListener('click',()=>adjustWalk(1));
+  $('#walkEditBtn').addEventListener('click',openWalkSheet);
+  $('#walkPresetSave').addEventListener('click',saveWalkPresets);
   $('#alertRepeat').addEventListener('change',(e)=>{
     const n=Number(e.target.value); state.alertMax=[0,3,5,10].includes(n)?n:0;
     writeJSON(KEYS.alertRepeat,state.alertMax); toast(state.alertMax?`提示會響 ${state.alertMax} 次`:'提示會持續響');
