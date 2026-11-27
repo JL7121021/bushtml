@@ -144,9 +144,6 @@ button,input{font-family:inherit} button{cursor:pointer;color:inherit} button:ac
 .stepper{display:inline-flex;align-items:center;gap:5px;padding:4px;border-radius:12px;background:var(--surface);box-shadow:var(--in-sm);font-variant-numeric:tabular-nums}
 .stepper button{width:25px;height:25px;border:0;border-radius:9px;background:var(--surface);box-shadow:var(--out-xs);font-size:15px;display:grid;place-items:center}
 .stepper button:active{box-shadow:var(--in-sm)} .stepper strong{min-width:12px;text-align:center;font-size:13px}.stepper span{font-size:10px;color:var(--ink3);margin-right:4px}
-.leave-mode-btn{border:0;border-radius:999px;padding:7px 11px;white-space:nowrap;background:var(--surface);box-shadow:var(--out-sm);color:var(--accent);font-size:11px;font-weight:700}
-.leave-custom{margin-top:10px}.time-field>span{display:block;margin-bottom:6px;font-size:11px;color:var(--ink3)}
-.time-field input{width:100%;box-sizing:border-box;padding:11px 13px;border:0;border-radius:13px;background:var(--surface);box-shadow:var(--in-sm);color:var(--ink);font-size:17px;font-weight:650;font-variant-numeric:tabular-nums;outline:none;-webkit-appearance:none}
 .eta-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:10.5px;color:var(--ink3)}
 .auto-tag{display:inline-flex;align-items:center;gap:5px}.auto-tag i{width:5px;height:5px;border-radius:50%;background:var(--green);animation:fade 2.4s infinite}@keyframes fade{50%{opacity:.3}}
 
@@ -269,12 +266,6 @@ button,input{font-family:inherit} button{cursor:pointer;color:inherit} button:ac
             <button type="button" id="walkPlus" aria-label="增加一分鐘">＋</button>
           </div>
         </div>
-        <button class="leave-mode-btn" id="leaveModeBtn" type="button">自訂時間</button>
-      </div>
-      <div class="leave-custom" id="leaveCustomPanel" hidden>
-        <label class="time-field"><span>每日出門口時間（香港時間）</span>
-          <input id="leaveTimeInput" type="time" min="00:00" max="23:59" aria-label="每日出門口時間">
-        </label>
       </div>
       <div class="eta-foot"><span id="etaUpdated">—</span><span class="auto-tag"><i></i>自動更新</span></div>
     </section>
@@ -360,7 +351,7 @@ const API = {
 const KEYS = {
   current:'hkbus.v2.current', routes:'hkbus.v2.routes', stopMap:'hkbus.v2.stopmap',
   routePrefs:'hkbus.v2.routePrefs', stopByKey:'hkbus.v2.stopByKey',
-  walk:'hkbus.v2.walk', leaveMode:'hkbus.v2.leaveMode', leaveTime:'hkbus.v2.leaveTime',
+  walk:'hkbus.v2.walk',
   pos:'hkbus.v2.pos', weather:'hkbus.v2.weather', hourly:'hkbus.v2.hourly', weatherLoc:'hkbus.v2.weatherLoc',
   panelOrder:'hkbus.v2.panelOrder',
   theme:'hkbus.v2.theme', a2hs:'hkbus.v2.a2hs',
@@ -432,11 +423,11 @@ const state = {
   routeList:[], routeAt:0, stopMap:{}, stopMapReady:false,
   stops:[], stopId:null, stopByKey:{}, routePrefs:{}, stopsError:null,
   etas:[], etaFetchedAt:0, etaLoading:false, etaError:null, selectedBus:0,
-  userPos:null, walkMin:5, leaveMode:'bus', leaveTime:'08:00',
+  userPos:null, walkMin:5,
   favRoutes:[], favStops:[], recentRoutes:[], scenes:[], activeScene:null,
   theme:'auto', weather:null, hourly:null, weatherLoc:'auto',
   panelOrder:['bus','weather','hourly'],
-  alertOn:false, audioCtx:null, wakeLock:null, wakeLockWanted:false, notifyEnabled:false, leaveNotifiedTarget:null,
+  alertOn:false, audioCtx:null, alertAudio:null, dueSince:0, wakeLock:null, wakeLockWanted:false, notifyEnabled:false, leaveNotifiedTarget:null,
 };
 let etaToken=0, wxToken=0, hourlyToken=0, toastTimer=null, alertTimer=null;
 function readJSON(k,f){ try { const s=localStorage.getItem(k); return s?JSON.parse(s):f; } catch { return f; } }
@@ -492,10 +483,6 @@ function loadPrefs() {
   state.routePrefs=readJSON(KEYS.routePrefs,{}) || {};
   state.stopByKey=readJSON(KEYS.stopByKey,{}) || state.stopByKey;
   const walk=readJSON(KEYS.walk,null); if (Number.isFinite(walk)) state.walkMin=clampWalk(walk);
-  state.leaveMode=localStorage.getItem(KEYS.leaveMode)||'bus';
-  if (state.leaveMode!=='bus'&&state.leaveMode!=='custom') state.leaveMode='bus';
-  state.leaveTime=readJSON(KEYS.leaveTime,null)||'08:00';
-  if (!isValidHHMM(state.leaveTime)) state.leaveTime='08:00';
   state.pos=readJSON(KEYS.pos,null);
   if (state.pos && Number.isFinite(state.pos.lat) && Number.isFinite(state.pos.lng)) state.userPos=state.pos;
   const wl=readJSON(KEYS.weatherLoc,'auto');
@@ -614,12 +601,10 @@ function renderScenes() {
 function applyScene(id) {
   const s=state.scenes.find(x=>x.id===id); if(!s) return;
   state.route=s.route; state.bound=s.bound==='I'?'I':'O'; state.serviceType=String(s.serviceType||'1');
-  state.walkMin=clampWalk(s.walkMin); state.leaveMode=s.leaveMode==='custom'?'custom':'bus';
-  state.leaveTime=isValidHHMM(s.leaveTime)?s.leaveTime:'08:00';
+  state.walkMin=clampWalk(s.walkMin);
   if (s.stopId) state.stopByKey[`${state.route}|${state.bound}|${state.serviceType}`]=s.stopId;
   state.activeScene=id;
   saveCurrent(); writeJSON(KEYS.stopByKey,state.stopByKey); writeJSON(KEYS.walk,state.walkMin);
-  writeJSON(KEYS.leaveMode,state.leaveMode); writeJSON(KEYS.leaveTime,state.leaveTime);
   try{localStorage.setItem(KEYS.activeScene,id)}catch{}
   state.stops=[]; state.etas=[]; state.selectedBus=0; state.etaError=null;
   renderScenes(); renderBus(); renderLeave();
@@ -630,7 +615,7 @@ function saveCurrentScene() {
   let name;
     try { name=prompt('場景名稱（例如：返工 / 放學）',suggested); } catch { name=suggested; }
   name=String(name).trim()||suggested;
-  const s={id:'s'+Date.now(),name,route:state.route,bound:state.bound,serviceType:state.serviceType,stopId:state.stopId,walkMin:state.walkMin,leaveMode:state.leaveMode,leaveTime:state.leaveTime};
+  const s={id:'s'+Date.now(),name,route:state.route,bound:state.bound,serviceType:state.serviceType,stopId:state.stopId,walkMin:state.walkMin};
   state.scenes.push(s); state.activeScene=s.id;
   writeJSON(KEYS.scenes,state.scenes); try{localStorage.setItem(KEYS.activeScene,s.id)}catch{}
   renderScenes(); toast(`已儲存場景「${name}」`);
@@ -924,13 +909,13 @@ function etaStatusHTML() {
 }
 function renderEta() {
   const bus=state.etas[state.selectedBus]||state.etas[0];
-  const side=(bus&&state.leaveMode==='bus')
+  const side=(bus)
     ? `<div class="ride-side"><span class="ride-eta"><b data-eta-min="${bus.t}">--</b><em>分鐘到站</em></span><span class="ride-time">${timeOf(bus.t)} 到站</span>${bus.rmk?`<span class="tag">${esc(bus.rmk)}</span>`:''}</div>`
     : '';
-  const chips=(state.leaveMode==='bus'&&state.etas.length)
+  const chips=(state.etas.length)
     ? `<div class="bus-picker" role="group" aria-label="選擇班次">${state.etas.map((e,i)=>`<button class="bus-chip${i===state.selectedBus?' selected':''}" type="button" data-eta-pick="${i}" aria-pressed="${i===state.selectedBus}"><b>${timeOf(e.t)}</b><small>${i===0?'下一班':`第${i+1}班`}</small></button>`).join('')}</div>`
     : '';
-  const rows=(state.etas.length>1&&state.leaveMode==='bus')
+  const rows=(state.etas.length>1)
     ? `<div class="ride-rows">${state.etas.map((e,i)=>({e,i})).filter(x=>x.i!==state.selectedBus).map(x=>`<div class="ride-row"><span class="t">${timeOf(x.e.t)}</span>${x.e.rmk?`<span class="tag">${esc(x.e.rmk)}</span>`:''}<span class="m" data-eta-row="${x.e.t}">--</span></div>`).join('')}</div>`
     : '';
   const alert=state.alertOn?`<div class="alert-bar"><span>🔔 出門提示持續中（聲音／震動）</span><button type="button" data-action="stop-alert">停止提示</button></div>`:'';
@@ -954,60 +939,49 @@ function tickEtas() {
 
 /* ===== leave countdown ===== */
 function clampWalk(n){ return Math.min(30,Math.max(1,Math.round(Number(n)||5))); }
-function isValidHHMM(v){ return /^([01]?\d|2[0-3]):[0-5]\d$/.test(String(v||'')); }
-function nextDailyTarget(hhmm) {
-  const m=/^([01]?\d|2[0-3]):([0-5]\d)$/.exec(String(hhmm||''));
-  const hh=Number(m?m[1]:8), mm=Number(m?m[2]:0), p=hkParts();
-  const today=Date.UTC(Number(p.year),Number(p.month)-1,Number(p.day),hh-8,mm,0);
-  return Date.now()-today>60*60*1000?today+DAY_MS:today;
-}
 function fmtCountdown(ms) {
   const t=Math.max(0,Math.floor(ms/1000));
   return t>=3600?`${Math.floor(t/3600)}:${pad2(Math.floor(t/60)%60)}:${pad2(t%60)}`:`${pad2(Math.floor(t/60))}:${pad2(t%60)}`;
 }
 function leaveInfo() {
-  if (state.leaveMode==='bus') {
-    const bus=state.etas[state.selectedBus]||state.etas[0];
-    if (!bus) return {target:null,sub:state.etaError?'未能取得班次，請稍後重試':`等待 ${state.route} 班次資料…`};
-    const target=bus.t-state.walkMin*60000;
-    return {target,sub:`${timeOf(target)} 出門 → ${timeOf(bus.t)} 到站 · 步行 ${state.walkMin} 分鐘`};
-  }
-  const target=nextDailyTarget(state.leaveTime);
-  return {target,sub:Date.now()>target?`已過 ${state.leaveTime} · 明日再倒數`:`每日 ${state.leaveTime} · 香港時間`};
+  const bus=state.etas[state.selectedBus]||state.etas[0];
+  if (!bus) return {target:null,sub:state.etaError?'未能取得班次，請稍後重試':`等待 ${state.route} 班次資料…`};
+  const target=bus.t-state.walkMin*60000;
+  return {target,sub:`${timeOf(target)} 出門 → ${timeOf(bus.t)} 到站 · 步行 ${state.walkMin} 分鐘`};
 }
 function renderLeave() {
-  $('#leaveModeBtn').textContent=state.leaveMode==='bus'?'自訂時間':`跟 ${state.route}`;
-  $('#leaveWalk').hidden=state.leaveMode!=='bus';
-  $('#leaveCustomPanel').hidden=state.leaveMode!=='custom';
   $('#walkValue').textContent=state.walkMin;
-  $('#leaveTimeInput').value=state.leaveTime;
   renderEta(); tickLeave();
 }
 function tickLeave() {
   const info=leaveInfo(), panel=$('#ridePanel'), count=$('#leaveCountdown'), note=$('#leaveSub');
   if (!panel||!count) return;
   if (info.target==null||!Number.isFinite(info.target)) {
+    state.dueSince=0;
     panel.classList.remove('due','soon','near'); count.textContent='--:--';
   } else {
     const diff=info.target-Date.now(), due=diff<=0;
-    panel.classList.toggle('due',due); panel.classList.toggle('soon',!due&&diff<=60000);
-    panel.classList.toggle('near',!due&&diff>60000&&diff<=5*60000);
-    count.textContent=due?'出門口！':fmtCountdown(diff);
-    if (due) startLeaveAlert();
+    if (due) {
+      if (!state.dueSince) state.dueSince=Date.now();
+      const armed=Date.now()-state.dueSince>=15000;
+      panel.classList.toggle('due',armed); panel.classList.toggle('soon',!armed);
+      panel.classList.remove('near');
+      count.textContent=armed?'出門口！':'準備出發';
+      if (armed) startLeaveAlert();
+    } else {
+      state.dueSince=0;
+      panel.classList.remove('due');
+      panel.classList.toggle('soon',diff<=60000);
+      panel.classList.toggle('near',diff>60000&&diff<=5*60000);
+      count.textContent=fmtCountdown(diff);
+    }
   }
   if (note) note.textContent=info.sub;
-}
-function setLeaveMode(mode) {
-  if (mode!=='bus'&&mode!=='custom') return;
-  if (state.leaveMode===mode) return;
-  state.leaveMode=mode; writeJSON(KEYS.leaveMode,mode); stopLeaveAlert(); renderLeave();
 }
 function adjustWalk(delta) {
   const next=clampWalk(state.walkMin+delta); if(next===state.walkMin) return;
   state.walkMin=next; writeJSON(KEYS.walk,next); renderLeave();
 }
-function setLeaveTime(v) { if(!isValidHHMM(v)) return; state.leaveTime=v; writeJSON(KEYS.leaveTime,v); const inp=$('#leaveTimeInput'); if(inp) inp.value=v; tickLeave(); }
-
 /* ===== persistent leave alert ===== */
 function ensureAudio() {
   try {
@@ -1016,26 +990,54 @@ function ensureAudio() {
     return state.audioCtx;
   } catch { return null; }
 }
+function makeBeepURI() {
+  try {
+    const rate=8000, dur=.46, n=Math.floor(rate*dur), buf=new ArrayBuffer(44+n*2), v=new DataView(buf);
+    const put=(o,s)=>{ for(let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); };
+    put(0,'RIFF'); v.setUint32(4,36+n*2,true); put(8,'WAVE'); put(12,'fmt ');
+    v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+    v.setUint32(24,rate,true); v.setUint32(28,rate*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true);
+    put(36,'data'); v.setUint32(40,n*2,true);
+    for(let i=0;i<n;i++){
+      const t=i/rate, step=Math.min(2,Math.floor(t/.18)), f=step===0?880:660, local=t-step*.18;
+      const env=Math.max(0,1-local/.18);
+      v.setInt16(44+i*2,Math.sin(2*Math.PI*f*t)*env*14000,true);
+    }
+    const bytes=new Uint8Array(buf); let s='';
+    for(let i=0;i<bytes.length;i+=8192) s+=String.fromCharCode.apply(null,bytes.subarray(i,i+8192));
+    return 'data:audio/wav;base64,'+btoa(s);
+  } catch { return ''; }
+}
+function initAlertAudio() {
+  try {
+    if (!state.alertAudio && window.Audio) {
+      const a=new Audio(makeBeepURI()); a.preload='auto'; a.setAttribute('playsinline',''); state.alertAudio=a;
+    }
+  } catch {}
+  return state.alertAudio;
+}
+function playAlertAudio() {
+  const a=initAlertAudio(); if(!a) return;
+  try { a.pause(); a.currentTime=0; const p=a.play(); if(p&&p.catch) p.catch(()=>{}); } catch {}
+}
 function unlockAudio() {
-  const ctx=ensureAudio(); if(!ctx) return;
-  try {
-    const buf=ctx.createBuffer(1,1,ctx.sampleRate);
-    const src=ctx.createBufferSource(); src.buffer=buf; src.connect(ctx.destination); src.start(0);
-  } catch {}
+  const a=initAlertAudio();
+  if (a) {
+    try {
+      const vol=a.volume; a.volume=0; a.currentTime=0;
+      const p=a.play(), done=()=>{ try{a.pause();a.currentTime=0;}catch{} a.volume=vol; };
+      if(p&&p.then) p.then(done).catch(done); else done();
+    } catch {}
+  }
+  const ctx=ensureAudio();
+  if (ctx) {
+    try {
+      const buf=ctx.createBuffer(1,Math.floor(ctx.sampleRate*.3),ctx.sampleRate);
+      const src=ctx.createBufferSource(); src.buffer=buf; src.connect(ctx.destination); src.start(0);
+    } catch {}
+  }
 }
-function beep() {
-  const ctx=ensureAudio(); if(!ctx) return;
-  try {
-    const now=ctx.currentTime;
-    [880,660].forEach((freq,i)=>{
-      const t=now+i*.16, o=ctx.createOscillator(), g=ctx.createGain();
-      o.type='sine'; o.frequency.setValueAtTime(freq,t);
-      g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.22,t+.02);
-      g.gain.exponentialRampToValueAtTime(.0001,t+.14);
-      o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+.16);
-    });
-  } catch {}
-}
+function beep() { playAlertAudio(); }
 function buzz() { try { if(!navigator.vibrate) return; if(navigator.userActivation && !navigator.userActivation.hasBeenActive) return; navigator.vibrate([400,200,400,200,800]); } catch {} }
 function startLeaveAlert() {
   if (state.alertOn) return;
@@ -1248,8 +1250,6 @@ function bindEvents() {
   $('#serviceTabs').addEventListener('click',(e)=>{ const b=e.target.closest('[data-service]'); if(b) setServiceType(b.dataset.service); });
   $('#walkMinus').addEventListener('click',()=>adjustWalk(-1));
   $('#walkPlus').addEventListener('click',()=>adjustWalk(1));
-  $('#leaveModeBtn').addEventListener('click',()=>setLeaveMode(state.leaveMode==='bus'?'custom':'bus'));
-  $('#leaveTimeInput').addEventListener('change',(e)=>setLeaveTime(e.target.value));
   $('#etaArea').addEventListener('click',(e)=>{
     const pick=e.target.closest('[data-eta-pick]');
     if (pick) { state.selectedBus=Number(pick.dataset.etaPick)||0; renderEta(); tickEtas(); tickLeave(); return; }
