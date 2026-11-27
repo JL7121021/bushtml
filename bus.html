@@ -50,7 +50,7 @@ body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);overflow-x
  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang HK","PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 button,input{font-family:inherit} button{cursor:pointer;color:inherit} button:active{transform:scale(.975)}
-.app{max-width:500px;margin:0 auto;box-sizing:border-box;padding:calc(16px + env(safe-area-inset-top)) 16px calc(30px + env(safe-area-inset-bottom))}
+.app{max-width:500px;margin:0 auto;box-sizing:border-box;padding:calc(10px + env(safe-area-inset-top)) 12px calc(20px + env(safe-area-inset-bottom))}
 
 /* header */
 .hero{padding:4px 5px 0}.hero-top{display:flex;align-items:center;gap:10px}
@@ -60,18 +60,18 @@ button,input{font-family:inherit} button{cursor:pointer;color:inherit} button:ac
 .hero-date{font-size:11.5px;color:var(--ink3);margin-left:auto;font-variant-numeric:tabular-nums}
 .theme-btn,.mini-btn{width:34px;height:34px;flex:none;border:0;border-radius:50%;background:var(--surface);box-shadow:var(--out-xs);display:grid;place-items:center;font-size:14px}
 .theme-btn:active,.mini-btn:active{box-shadow:var(--in-sm)}
-.a2hs{display:flex;align-items:center;gap:8px;margin-top:10px;padding:9px 12px;border-radius:14px;background:var(--surface);box-shadow:var(--out-sm);font-size:11px;color:var(--ink2);line-height:1.45}
+.a2hs{display:flex;align-items:center;gap:8px;margin-top:7px;padding:7px 10px;border-radius:14px;background:var(--surface);box-shadow:var(--out-sm);font-size:11px;color:var(--ink2);line-height:1.4}
 .a2hs b{color:var(--ink)} .a2hs button{margin-left:auto;flex:none;border:0;border-radius:999px;padding:4px 10px;background:var(--surface);box-shadow:var(--out-xs);color:var(--ink3);font-size:11px}
 .utility-bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .util-btn{flex:1;min-width:140px;border:0;border-radius:12px;padding:9px 12px;background:var(--surface);box-shadow:var(--out-sm);color:var(--ink2);font-size:11px;font-weight:650}
 .util-btn[aria-pressed="true"]{box-shadow:var(--in-sm);color:var(--accent)}
 .util-btn:active{box-shadow:var(--in-sm)}
 /* cards */
-.stack{display:flex;flex-direction:column;gap:18px;margin-top:20px}
-.card{background:var(--surface);border-radius:var(--radius);padding:18px;box-shadow:var(--out)}
-.card-head{display:flex;align-items:center;gap:11px;margin-bottom:13px}
-.card-head h1,.card-head h2{margin:0;font-size:17px;font-weight:700;letter-spacing:-.015em}
-.head-ico{width:32px;height:32px;border-radius:11px;flex:none;display:grid;place-items:center;font-size:15px;background:var(--surface);box-shadow:var(--out-xs)}
+.stack{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.card{background:var(--surface);border-radius:22px;padding:14px;box-shadow:var(--out)}
+.card-head{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.card-head h1,.card-head h2{margin:0;font-size:16px;font-weight:700;letter-spacing:-.015em}
+.head-ico{width:28px;height:28px;border-radius:10px;flex:none;display:grid;place-items:center;font-size:14px;background:var(--surface);box-shadow:var(--out-xs)}
 .wx-ico{color:#f5a623}.head-note{margin-left:auto;font-size:11px;color:var(--ink3);font-variant-numeric:tabular-nums}
 .panel-moves{display:inline-flex;gap:6px;margin-left:2px;flex:none}
 .bus .panel-moves{margin-left:auto}
@@ -80,7 +80,7 @@ button,input{font-family:inherit} button{cursor:pointer;color:inherit} button:ac
 .panel-move-btn:disabled{opacity:.35;box-shadow:none;cursor:default}
 
 /* scenes */
-.scenes{display:flex;gap:7px;overflow-x:auto;margin:-2px 0 14px;padding:2px 0 4px;scrollbar-width:none}
+.scenes{display:flex;gap:7px;overflow-x:auto;margin:-2px 0 9px;padding:2px 0 4px;scrollbar-width:none}
 .scenes::-webkit-scrollbar{display:none}
 .scene{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;border:0;border-radius:999px;padding:7px 12px;background:var(--surface);box-shadow:var(--out-sm);font-size:11.5px;font-weight:650;white-space:nowrap}
 .scene.active{box-shadow:var(--in-sm);color:var(--accent)}
@@ -94,15 +94,15 @@ button,input{font-family:inherit} button{cursor:pointer;color:inherit} button:ac
 .route-title p{margin:3px 0 0;font-size:11.5px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .icon-btn{width:36px;height:36px;flex:none;border:0;border-radius:50%;background:var(--surface);box-shadow:var(--out-sm);color:var(--ink2);display:grid;place-items:center}
 .icon-btn:active{box-shadow:var(--in-sm)} .icon-btn.loading svg{animation:spin .9s linear infinite} @keyframes spin{to{transform:rotate(360deg)}}
-.service-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 12px}
+.service-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 8px}
 .service-tabs button{border:0;border-radius:999px;padding:5px 11px;background:var(--surface);box-shadow:var(--out-xs);font-size:10.5px;font-weight:700;color:var(--ink3)}
 .service-tabs button[aria-pressed="true"]{box-shadow:var(--in-sm);color:var(--accent)}
-.segmented{position:relative;display:grid;grid-template-columns:1fr 1fr;background:var(--surface);box-shadow:var(--in-sm);border-radius:14px;padding:4px;margin-bottom:14px}
+.segmented{position:relative;display:grid;grid-template-columns:1fr 1fr;background:var(--surface);box-shadow:var(--in-sm);border-radius:14px;padding:4px;margin-bottom:10px}
 .seg-thumb{position:absolute;top:4px;left:4px;width:calc(50% - 4px);height:calc(100% - 8px);border-radius:11px;background:var(--surface);box-shadow:var(--out-xs);transition:transform .3s cubic-bezier(.32,.72,0,1)}
 .segmented[data-active="I"] .seg-thumb{transform:translateX(100%)}
 .segmented button{position:relative;z-index:1;border:0;background:none;padding:8px 0;font-size:12.5px;font-weight:650;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .segmented button[aria-selected="true"]{color:var(--accent)}
-.stop-row{display:flex;gap:8px;align-items:stretch;margin-bottom:14px}
+.stop-row{display:flex;gap:8px;align-items:stretch;margin-bottom:10px}
 .stop-btn{flex:1;min-width:0;display:flex;align-items:center;gap:10px;text-align:left;padding:9px 11px;border:0;border-radius:16px;background:var(--surface);box-shadow:var(--out-sm)}
 .stop-btn:active{box-shadow:var(--in-sm);transform:none}
 .stop-pin{width:30px;height:30px;flex:none;border-radius:50%;display:grid;place-items:center;background:var(--surface);box-shadow:var(--out-xs);color:var(--accent)}
@@ -112,11 +112,11 @@ button,input{font-family:inherit} button{cursor:pointer;color:inherit} button:ac
 
 /* integrated ride panel */
 .eta-area{min-height:92px}
-.ride-panel{border-radius:20px;padding:14px;background:var(--surface);box-shadow:var(--in-sm);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ride-panel{border-radius:18px;padding:11px;background:var(--surface);box-shadow:var(--in-sm);display:flex;align-items:center;justify-content:space-between;gap:10px}
 .ride-panel.due{box-shadow:var(--in-sm),inset 0 0 0 1px rgba(229,72,77,.42)}
 .ride-main{min-width:0;display:flex;flex-direction:column;gap:3px}
 .ride-cap{font-size:10px;color:var(--ink3)}
-.ride-count{font-size:38px;font-weight:750;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ride-count{font-size:34px;font-weight:750;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums;white-space:nowrap}
 .ride-panel.near .ride-count{color:var(--amber)} .ride-panel.soon .ride-count{color:var(--danger)}
 .ride-panel.due .ride-count{font-size:23px;color:var(--danger)}
 .ride-note{font-size:11px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;font-variant-numeric:tabular-nums}
@@ -128,7 +128,7 @@ button,input{font-family:inherit} button{cursor:pointer;color:inherit} button:ac
 .ride-status{margin:10px 2px 0;font-size:11px;color:var(--ink3);line-height:1.5}
 .link-btn{border:0;background:none;color:var(--accent);font-size:11px;font-weight:700;padding:0 2px;text-decoration:underline}
 button,a,input,label,[role="button"]{touch-action:manipulation}
-.ride-rows{margin-top:11px}.ride-row{display:flex;align-items:center;gap:9px;padding:10px 8px;font-size:12.5px;border-bottom:1px solid var(--line);border-radius:10px}
+.ride-rows{margin-top:8px}.ride-row{display:flex;align-items:center;gap:9px;padding:7px 8px;font-size:12.5px;border-bottom:1px solid var(--line);border-radius:10px}
 .ride-row:last-child{border-bottom:0}.ride-row .t{color:var(--ink2);min-width:46px;font-variant-numeric:tabular-nums}
 .ride-row.selected{background:var(--surface);box-shadow:var(--in-sm)}.ride-row.selected .t,.ride-row.selected .m{color:var(--accent)}
 .ride-row .m{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums}.ride-row .m span{font-size:10px;font-weight:500;color:var(--ink3);margin-left:2px}
@@ -136,36 +136,41 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
 .alert-bar button{margin-left:auto;flex:none;border:0;border-radius:999px;padding:12px 22px;min-height:44px;background:var(--surface);box-shadow:var(--out-sm);color:var(--danger);font-size:14px;font-weight:800;white-space:nowrap}
 .alert-bar[hidden]{display:none}
 .alert-bar.floating{position:fixed;top:calc(8px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:70;width:max-content;max-width:94vw;box-shadow:0 10px 30px rgba(0,0,0,.25),inset 3px 0 0 var(--danger)}
-.leave-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.leave-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
 .notify-toggle{border:0;border-radius:999px;padding:7px 11px;white-space:nowrap;background:var(--surface);box-shadow:var(--out-sm);color:var(--accent);font-size:11px;font-weight:700}
 .notify-toggle[aria-pressed="true"]{box-shadow:var(--in-sm)}
 .leave-walk{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink2)}
 .stepper{display:inline-flex;align-items:center;gap:5px;padding:4px;border-radius:12px;background:var(--surface);box-shadow:var(--in-sm);font-variant-numeric:tabular-nums}
 .stepper button{width:25px;height:25px;border:0;border-radius:9px;background:var(--surface);box-shadow:var(--out-xs);font-size:15px;display:grid;place-items:center}
 .stepper button:active{box-shadow:var(--in-sm)} .stepper strong{min-width:12px;text-align:center;font-size:13px}.stepper span{font-size:10px;color:var(--ink3);margin-right:4px}
-.alert-config{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:11px;color:var(--ink3)}
+.alert-config{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:7px;font-size:11px;color:var(--ink3)}
 .alert-config label{display:inline-flex;align-items:center;gap:6px}
 .alert-config select{border:0;border-radius:999px;padding:6px 10px;background:var(--surface);box-shadow:var(--out-xs);color:var(--ink);font-size:11px;font-weight:650;-webkit-appearance:none}
 .lead-presets{display:inline-flex;align-items:center;gap:5px}.lead-presets button{border:0;border-radius:999px;padding:6px 9px;background:var(--surface);box-shadow:var(--out-xs);color:var(--ink2);font-size:11px;font-weight:650}
 .lead-presets button.active{box-shadow:var(--in-sm);color:var(--accent)}
-.eta-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:10.5px;color:var(--ink3)}
+.eta-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;padding-top:7px;border-top:1px solid var(--line);font-size:10.5px;color:var(--ink3)}
 .auto-tag{display:inline-flex;align-items:center;gap:5px}.auto-tag i{width:5px;height:5px;border-radius:50%;background:var(--green);animation:fade 2.4s infinite}@keyframes fade{50%{opacity:.3}}
 
 /* weather */
-.warning{display:flex;gap:9px;align-items:flex-start;padding:10px 12px;margin-bottom:13px;border-radius:15px;background:var(--surface);box-shadow:var(--in-sm),inset 3px 0 0 var(--amber);font-size:12px;line-height:1.5}
-.warning b{display:block;font-size:12.5px;margin-bottom:1px}.warning p{margin:0;color:var(--ink2)}
-.wx-now{display:flex;align-items:center;gap:12px;margin-bottom:10px}.wx-icon{font-size:38px;line-height:1}
-.wx-now-copy{flex:1;min-width:0}.wx-now-copy strong{display:block;font-size:16px;font-weight:700}.wx-now-copy .loc-link{padding:0;border:0;background:none;color:var(--ink3);font-size:10.5px;text-align:left}
-.wx-cur{font-size:31px;font-weight:700;font-variant-numeric:tabular-nums}.wx-cur sup{font-size:11px;color:var(--ink2);margin-left:2px;vertical-align:12px}
-.wx-range{font-size:25px;font-weight:750;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-bottom:4px}
-.wx-umbrella{font-size:11.5px;color:var(--ink2);margin-bottom:14px;min-height:16px}
-.wx-hours-title{font-size:10.5px;color:var(--ink3);margin:0 0 7px 2px}
-.wx-hours{display:flex;gap:8px;overflow-x:auto;padding:2px 0 5px;margin:0 -2px;scrollbar-width:none}
+.warning{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;margin-bottom:9px;border-radius:14px;background:var(--surface);box-shadow:var(--in-sm),inset 3px 0 0 var(--amber);font-size:11.5px;line-height:1.45}
+.warning b{display:block;font-size:12px;margin-bottom:1px}.warning p{margin:0;color:var(--ink2)}
+.wx-now{display:flex;align-items:center;gap:10px;margin-bottom:6px}.wx-icon{font-size:32px;line-height:1}
+.wx-now-copy{flex:1;min-width:0}.wx-now-copy strong{display:block;font-size:15px;font-weight:700}
+.wx-source-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:1px}
+.wx-now-copy .loc-link{padding:0;border:0;background:none;color:var(--ink3);font-size:10px;text-align:left}
+.app-mini{color:var(--accent);font-size:9.5px;font-weight:700;text-decoration:none;white-space:nowrap}
+.wx-cur{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}.wx-cur sup{font-size:10px;color:var(--ink2);margin-left:2px;vertical-align:10px}
+.wx-range{font-size:22px;font-weight:750;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-bottom:3px}
+.wx-umbrella{font-size:11px;color:var(--ink2);margin-bottom:6px;min-height:14px}
+.wx-alt{font-size:10px;color:var(--ink3);padding:5px 8px;border-radius:10px;background:var(--surface);box-shadow:var(--out-xs);margin-bottom:8px}
+.wx-hours-title{font-size:10px;color:var(--ink3);margin:0 0 5px 2px}
+.wx-hours{display:flex;gap:7px;overflow-x:auto;padding:2px 0 4px;margin:0 -2px;scrollbar-width:none}
 .wx-hours::-webkit-scrollbar{display:none}
-.hour{flex:0 0 58px;border-radius:15px;padding:8px 4px;background:var(--surface);box-shadow:var(--out-sm);display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center}
-.hour.now{box-shadow:var(--in-sm)}.hour .ht{font-size:10px;color:var(--ink3);font-variant-numeric:tabular-nums}
-.hour .hi{font-size:19px;line-height:1.15}.hour .hp{font-size:10px;color:var(--blue);font-weight:700;font-variant-numeric:tabular-nums}
-.hour .hc{font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}.hour-empty{font-size:11px;color:var(--ink3);padding:10px 2px}
+.hour{flex:0 0 54px;border-radius:14px;padding:6px 4px;background:var(--surface);box-shadow:var(--out-sm);display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
+.hour.now{box-shadow:var(--in-sm)}.hour .ht{font-size:9.5px;color:var(--ink3);font-variant-numeric:tabular-nums}
+.hour .hi{font-size:17px;line-height:1.1}.hour .hp{font-size:9.5px;color:var(--blue);font-weight:700;font-variant-numeric:tabular-nums}
+.hour .hc{font-size:10.5px;font-weight:700;font-variant-numeric:tabular-nums}.hour-empty{font-size:11px;color:var(--ink3);padding:8px 2px}
+.app-open{text-decoration:none;font-size:15px;color:var(--accent)}
 
 /* sheets */
 .sheet-backdrop{position:fixed;inset:0;z-index:40;background:rgba(8,12,22,.38);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);opacity:0;transition:opacity .25s}
@@ -199,10 +204,11 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
 /* misc */
 .toast{position:fixed;left:50%;bottom:calc(26px + env(safe-area-inset-bottom));z-index:60;max-width:84vw;padding:10px 16px;border-radius:999px;background:rgba(20,25,35,.94);color:#fff;font-size:12.5px;text-align:center;opacity:0;transform:translate(-50%,14px);pointer-events:none;transition:.25s;backdrop-filter:blur(10px)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
-.foot{margin-top:22px;text-align:center;font-size:10px;line-height:1.8;color:var(--ink3)}
-.footer-utilities{margin:0 0 16px}
+.foot{margin-top:14px;text-align:center;font-size:9.5px;line-height:1.6;color:var(--ink3)}
+.foot a{color:var(--ink3);text-decoration:underline}
+.footer-utilities{margin:0 0 10px}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
-@media(max-width:380px){.ride-count{font-size:33px}.ride-eta b{font-size:21px}.ride-panel{padding:12px}.card{padding:16px}}
+@media(max-width:380px){.ride-count{font-size:30px}.ride-eta b{font-size:20px}.ride-panel{padding:10px}.card{padding:12px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
 </style>
 </head>
@@ -237,6 +243,7 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
         <button class="icon-btn" id="refreshBtn" type="button" aria-label="重新整理班次">
           <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.34 6.34M20 4v7h-7" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
+        <a class="icon-btn app-open" id="busAppLink" href="https://apps.apple.com/hk/app/app1933-kmb-lwb/id1170003707" target="_blank" rel="noopener" aria-label="開啟九巴 App" title="開啟九巴 App">↗</a>
       </div>
       <div class="service-tabs" id="serviceTabs" hidden></div>
       <div class="segmented" id="dirTabs" role="tablist" aria-label="行車方向" data-active="O">
@@ -298,11 +305,12 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
       <div id="warningBanner" class="warning" hidden></div>
       <div class="wx-now">
         <div class="wx-icon" id="wxIcon" aria-hidden="true">🌤️</div>
-        <div class="wx-now-copy"><strong id="wxRain">—</strong><button class="loc-link" id="wxLoc" type="button" aria-haspopup="dialog">📍 香港天文台 · 更改</button></div>
+        <div class="wx-now-copy"><strong id="wxRain">—</strong><div class="wx-source-row"><button class="loc-link" id="wxLoc" type="button" aria-haspopup="dialog">📍 香港天文台 · 更改</button><a class="app-mini" id="wxAppLink" href="https://apps.apple.com/hk/app/myobservatory/id361319719" target="_blank" rel="noopener">天文台 App ↗</a></div></div>
         <div class="wx-cur"><span id="wxTemp">--</span><sup>°C</sup></div>
       </div>
       <div class="wx-range" id="wxRange">--° / --°</div>
       <div class="wx-umbrella" id="wxUmbrella">—</div>
+      <div class="wx-alt" id="wxAlt">另一來源 · ECMWF 載入中…</div>
     </section>
 
     <section class="card wx-hourly-card" id="panelHourly" data-panel="hourly" aria-labelledby="wxHourlyTitle">
@@ -324,7 +332,8 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
       <button class="util-btn" id="wakeBtn" type="button" aria-pressed="true">保持螢幕：開</button>
       <button class="util-btn" id="soundTestBtn" type="button">🔊 測試提示音</button>
     </div>
-    資料來源：九巴／龍運開放數據 · 香港天文台 · Open-Meteo<br>班次及天氣資料僅供參考 · <span id="versionTag"></span>
+    資料來源：<a href="https://data.gov.hk/tc-data/dataset/hk-td-tis_21-etakmb" target="_blank" rel="noopener">九巴／龍運開放數據</a> · <a href="https://www.hko.gov.hk/tc/index.html" target="_blank" rel="noopener">香港天文台</a> · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo（含 ECMWF）</a><br>
+    非官方工具 · 資料僅供參考，不作任何保證 · <span id="versionTag"></span>
   </footer>
 </div>
 
@@ -359,7 +368,7 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
 <noscript><p style="text-align:center;padding:24px">請開啟 JavaScript 以查看實時班次及天氣。</p></noscript>
 <script>
 'use strict';
-const VERSION='1.0.7';
+const VERSION='1.0.8';
 /* ===== config ===== */
 const API = {
   routes: 'https://data.etabus.gov.hk/v1/transport/kmb/route/',
@@ -369,12 +378,13 @@ const API = {
   eta: (id) => `https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${id}`,
   wx: (t) => `https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=${t}&lang=tc`,
   hourly: (lat, lng) => `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,weather_code&hourly=temperature_2m,precipitation_probability,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code&timezone=Asia%2FHong_Kong&forecast_days=2`,
+  alt: (lat, lng) => `https://api.open-meteo.com/v1/ecmwf?latitude=${lat}&longitude=${lng}&current=temperature_2m,precipitation&hourly=precipitation_probability&timezone=Asia%2FHong_Kong&forecast_days=2`,
 };
 const KEYS = {
   current:'hkbus.v2.current', routes:'hkbus.v2.routes', stopMap:'hkbus.v2.stopmap',
   routePrefs:'hkbus.v2.routePrefs', stopByKey:'hkbus.v2.stopByKey',
   walk:'hkbus.v2.walk', alertRepeat:'hkbus.v2.alertRepeat',
-  pos:'hkbus.v2.pos', weather:'hkbus.v2.weather', hourly:'hkbus.v2.hourly', weatherLoc:'hkbus.v2.weatherLoc',
+  pos:'hkbus.v2.pos', weather:'hkbus.v2.weather', hourly:'hkbus.v2.hourly', alt:'hkbus.v2.alt', weatherLoc:'hkbus.v2.weatherLoc',
   panelOrder:'hkbus.v2.panelOrder',
   theme:'hkbus.v2.theme', a2hs:'hkbus.v2.a2hs',
   favRoutes:'hkbus.v2.favRoutes', favStops:'hkbus.v2.favStops', recentRoutes:'hkbus.v2.recentRoutes',
@@ -446,7 +456,7 @@ const state = {
   etas:[], etaFetchedAt:0, etaLoading:false, etaError:null, selectedBus:0,
   userPos:null, walkMin:5,
   favRoutes:[], favStops:[], recentRoutes:[], scenes:[], activeScene:null,
-  theme:'auto', weather:null, hourly:null, weatherLoc:'auto',
+  theme:'auto', weather:null, hourly:null, alt:null, weatherLoc:'auto',
   panelOrder:['bus','weather','hourly'],
   alertOn:false, alertMax:0, alertCount:0, audioCtx:null, alertAudio:null, alertPool:[], alertIndex:0, audioUnlocked:false, dueSince:0, alertSuppressedTarget:null, wakeLock:null, wakeLockWanted:true, notifyEnabled:false, leaveNotifiedTarget:null,
 };
@@ -1221,6 +1231,12 @@ function renderWeather() {
   $('#wxUmbrella').textContent=umbrella
     ? (range.psr!=null?`☂️ 今日下雨機會 ${range.psr}% · 建議帶傘`:'☂️ 今日預報有雨 · 建議帶傘')
     : (chance!=null?`☂️ 未來 1 小時下雨機會 ${chance}%`:'今日暫時無需帶傘');
+  const altTemp=Number(state.alt?.current?.temperature_2m);
+  const ai=nearestHourIndex(state.alt);
+  const altPop=ai>=0?Number(state.alt.hourly?.precipitation_probability?.[ai]):NaN;
+  const altParts=[Number.isFinite(altTemp)?`${Math.round(altTemp)}°`:'--°'];
+  if (Number.isFinite(altPop)) altParts.push(`雨 ${altPop}%`);
+  $('#wxAlt').textContent=`另一來源 · ECMWF ${altParts.join(' · ')}`;
   const banner=$('#warningBanner');
   if (warns.length) {
     banner.hidden=false;
@@ -1282,18 +1298,24 @@ async function loadHourly() {
   const token=++hourlyToken;
   const pos=weatherPosition();
   const district=weatherDistrictName();
-  try {
-    const j=await fetch(API.hourly(pos.lat,pos.lng),{cache:'no-store'}).then(r=>r.json());
-    if (token!==hourlyToken) return;
-    state.hourly={...j,district,at:Date.now()}; writeJSON(KEYS.hourly,state.hourly); renderWeather();
-  } catch {
-    if (token!==hourlyToken) return;
-    if (!state.hourly) renderHourlyError();
+  const [primary,alt]=await Promise.allSettled([
+    fetch(API.hourly(pos.lat,pos.lng),{cache:'no-store'}).then(r=>r.json()),
+    fetch(API.alt(pos.lat,pos.lng),{cache:'no-store'}).then(r=>r.json()),
+  ]);
+  if (token!==hourlyToken) return;
+  if (primary.status==='fulfilled') {
+    state.hourly={...primary.value,district,at:Date.now()}; writeJSON(KEYS.hourly,state.hourly);
   }
+  if (alt.status==='fulfilled') {
+    state.alt=alt.value; writeJSON(KEYS.alt,state.alt);
+  }
+  if (primary.status==='fulfilled'||alt.status==='fulfilled') renderWeather();
+  else if (!state.hourly) renderHourlyError();
 }
 function renderWeatherError() {
   $('#wxRain').textContent='暫時無法取得天氣'; $('#wxTemp').textContent='--';
   $('#wxRange').textContent='--° / --°'; $('#wxUmbrella').textContent='請檢查網絡'; $('#wxHours').innerHTML='<span class="hour-empty">暫時沒有資料</span>';
+  $('#wxAlt').textContent='另一來源 · 暫時無法取得';
 }
 function renderHourlyError() { const box=$('#wxHours'); if (!box.textContent.trim()||box.textContent.includes('載入中')) box.innerHTML='<span class="hour-empty">暫時沒有逐小時資料</span>'; }
 
@@ -1314,6 +1336,10 @@ function bindEvents() {
   $('#locBtn').addEventListener('click',()=>locateForStops(false));
   $('#wxLoc').addEventListener('click',openWeatherSheet);
   $('#refreshBtn').addEventListener('click',()=>{ refreshEta(); toast('正在更新班次…'); });
+  if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+    $('#busAppLink')?.addEventListener('click',(e)=>{ e.preventDefault(); location.href='itms-apps://itunes.apple.com/app/id1170003707'; });
+    $('#wxAppLink')?.addEventListener('click',(e)=>{ e.preventDefault(); location.href='itms-apps://itunes.apple.com/app/id361319719'; });
+  }
   $('#wakeBtn').addEventListener('click',toggleWakeLock);
   $('#notifyBtn').addEventListener('click',toggleNotify);
   $('#soundTestBtn').addEventListener('click',()=>{
