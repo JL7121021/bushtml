@@ -336,7 +336,7 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
 <noscript><p style="text-align:center;padding:24px">請開啟 JavaScript 以查看實時班次及天氣。</p></noscript>
 <script>
 'use strict';
-const VERSION='1.0.5';
+const VERSION='1.0.6';
 /* ===== config ===== */
 const API = {
   routes: 'https://data.etabus.gov.hk/v1/transport/kmb/route/',
@@ -575,10 +575,10 @@ async function toggleNotify() {
   if (state.notifyEnabled && perm==='granted') {
     state.notifyEnabled=false; stopLeaveAlert(); renderUtilityButtons(); toast('已關閉出門通知及提示音'); return;
   }
-  unlockAudio();
+  unlockAudio(); playEnableChime();
   if (perm==='default') { try { perm=await Notification.requestPermission(); } catch { perm='denied'; } }
   if (perm!=='granted') { state.notifyEnabled=false; renderUtilityButtons(); toast(perm==='denied'?'通知權限已被封鎖':'未授權通知'); return; }
-  state.notifyEnabled=true; renderUtilityButtons(); tickLeave(); toast('出門通知及提示音已開啟（下次開啟頁面須重新開啟）');
+  state.notifyEnabled=true; renderUtilityButtons(); tickLeave(); toast('已播放測試音 · 出門通知及提示音已開啟（下次須重新開啟）');
 }function cycleTheme() { applyTheme(state.theme==='auto'?'light':state.theme==='light'?'dark':'auto'); }
 function checkA2HS() {
   const standalone = navigator.standalone===true || matchMedia('(display-mode: standalone)').matches;
@@ -1012,17 +1012,17 @@ function ensureAudio() {
     return state.audioCtx;
   } catch { return null; }
 }
-function makeBeepURI() {
+function makeToneURI(notes, stepDur=.18) {
   try {
-    const rate=8000, dur=.46, n=Math.floor(rate*dur), buf=new ArrayBuffer(44+n*2), v=new DataView(buf);
+    const rate=8000, dur=stepDur*notes.length, n=Math.floor(rate*dur), buf=new ArrayBuffer(44+n*2), v=new DataView(buf);
     const put=(o,s)=>{ for(let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); };
     put(0,'RIFF'); v.setUint32(4,36+n*2,true); put(8,'WAVE'); put(12,'fmt ');
     v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
     v.setUint32(24,rate,true); v.setUint32(28,rate*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true);
     put(36,'data'); v.setUint32(40,n*2,true);
     for(let i=0;i<n;i++){
-      const t=i/rate, step=Math.min(2,Math.floor(t/.18)), f=step===0?880:660, local=t-step*.18;
-      const env=Math.max(0,1-local/.18);
+      const t=i/rate, step=Math.min(notes.length-1,Math.floor(t/stepDur)), f=notes[step], local=t-step*stepDur;
+      const env=Math.max(0,1-local/stepDur);
       v.setInt16(44+i*2,Math.sin(2*Math.PI*f*t)*env*14000,true);
     }
     const bytes=new Uint8Array(buf); let s='';
@@ -1030,6 +1030,8 @@ function makeBeepURI() {
     return 'data:audio/wav;base64,'+btoa(s);
   } catch { return ''; }
 }
+function makeBeepURI() { return makeToneURI([880,660],.18); }
+function makeChimeURI() { return makeToneURI([523.25,659.25,783.99],.12); }
 function initAlertAudio() {
   try {
     if (!state.alertAudio && window.Audio) {
@@ -1065,6 +1067,14 @@ function playAlertAudio() {
     const p=a.play();
     if(p&&p.catch) p.catch(()=>{ beepContext(); });
   } catch { beepContext(); }
+}
+function playEnableChime() {
+  try {
+    if (!window.Audio) return;
+    const a=new Audio(makeChimeURI()); a.volume=.85; a.setAttribute('playsinline','');
+    const p=a.play(); if(p&&p.catch) p.catch(()=>{});
+    setTimeout(()=>{ try{a.pause();a.src='';a.load();}catch{} },1200);
+  } catch {}
 }
 function unlockAudio() {
   initAlertAudio();
