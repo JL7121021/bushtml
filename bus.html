@@ -427,7 +427,7 @@ const state = {
   favRoutes:[], favStops:[], recentRoutes:[], scenes:[], activeScene:null,
   theme:'auto', weather:null, hourly:null, weatherLoc:'auto',
   panelOrder:['bus','weather','hourly'],
-  alertOn:false, audioCtx:null, alertAudio:null, dueSince:0, wakeLock:null, wakeLockWanted:false, notifyEnabled:false, leaveNotifiedTarget:null,
+  alertOn:false, audioCtx:null, alertAudio:null, audioUnlocked:false, dueSince:0, wakeLock:null, wakeLockWanted:false, notifyEnabled:false, leaveNotifiedTarget:null,
 };
 let etaToken=0, wxToken=0, hourlyToken=0, toastTimer=null, alertTimer=null;
 function readJSON(k,f){ try { const s=localStorage.getItem(k); return s?JSON.parse(s):f; } catch { return f; } }
@@ -654,6 +654,7 @@ async function bootstrap() {
   setInterval(()=>{ if(!document.hidden) loadHourly(); },30*60*1000);
   document.addEventListener('visibilitychange',()=>{
     if (document.hidden) return;
+    if (state.alertOn) ensureAudio();
     if (state.wakeLockWanted && !state.wakeLock) requestWakeLock();
     if (Date.now()-state.etaFetchedAt>15000) refreshEta();
     if (!state.weather || Date.now()-(state.weather.at||0)>5*60*1000) loadWeather();
@@ -1016,16 +1017,39 @@ function initAlertAudio() {
   } catch {}
   return state.alertAudio;
 }
+function beepContext() {
+  const ctx=ensureAudio(); if(!ctx) return;
+  try {
+    const now=ctx.currentTime;
+    [880,660].forEach((freq,i)=>{
+      const t=now+i*.16, o=ctx.createOscillator(), g=ctx.createGain();
+      o.type='sine'; o.frequency.setValueAtTime(freq,t);
+      g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.22,t+.02);
+      g.gain.exponentialRampToValueAtTime(.0001,t+.14);
+      o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+.16);
+    });
+  } catch {}
+}
 function playAlertAudio() {
-  const a=initAlertAudio(); if(!a) return;
-  try { a.pause(); a.currentTime=0; const p=a.play(); if(p&&p.catch) p.catch(()=>{}); } catch {}
+  const src=initAlertAudio(); if(!src) return;
+  try {
+    const a=new Audio(src.src); a.volume=src.volume; a.setAttribute('playsinline','');
+    let cleaned=false;
+    const cleanup=()=>{ if(cleaned)return; cleaned=true; try{a.pause();a.src='';a.load();}catch{} };
+    a.addEventListener('ended',cleanup,{once:true});
+    a.addEventListener('error',cleanup,{once:true});
+    const p=a.play();
+    if(p&&p.catch) p.catch(()=>{ cleanup(); beepContext(); });
+    setTimeout(cleanup,1200);
+  } catch { beepContext(); }
 }
 function unlockAudio() {
-  const a=initAlertAudio();
-  if (a) {
+  const src=initAlertAudio();
+  if (src) {
     try {
-      const vol=a.volume; a.volume=0; a.currentTime=0;
-      const p=a.play(), done=()=>{ try{a.pause();a.currentTime=0;}catch{} a.volume=vol; };
+      const a=new Audio(src.src); a.volume=0; a.setAttribute('playsinline','');
+      const p=a.play();
+      const done=()=>{ try{a.pause();a.src='';a.load();}catch{} };
       if(p&&p.then) p.then(done).catch(done); else done();
     } catch {}
   }
@@ -1033,9 +1057,10 @@ function unlockAudio() {
   if (ctx) {
     try {
       const buf=ctx.createBuffer(1,Math.floor(ctx.sampleRate*.3),ctx.sampleRate);
-      const src=ctx.createBufferSource(); src.buffer=buf; src.connect(ctx.destination); src.start(0);
+      const node=ctx.createBufferSource(); node.buffer=buf; node.connect(ctx.destination); node.start(0);
     } catch {}
   }
+  state.audioUnlocked=true;
 }
 function beep() { playAlertAudio(); }
 function buzz() { try { if(!navigator.vibrate) return; if(navigator.userActivation && !navigator.userActivation.hasBeenActive) return; navigator.vibrate([400,200,400,200,800]); } catch {} }
@@ -1233,6 +1258,7 @@ function bindEvents() {
   $('#wakeBtn').addEventListener('click',toggleWakeLock);
   $('#notifyBtn').addEventListener('click',toggleNotify);
   ['pointerdown','touchstart','click'].forEach(ev=>document.addEventListener(ev,unlockAudio,{once:true,passive:true}));
+  ['pointerdown','touchstart','click'].forEach(ev=>document.addEventListener(ev,()=>{ ensureAudio(); state.audioUnlocked=true; },{passive:true}));
   $('#soundTestBtn').addEventListener('click',()=>{
     unlockAudio(); beep(); buzz();
     toast(navigator.vibrate?'已播放測試提示音及震動':'已播放測試提示音（此瀏覽器不支援震動）');
