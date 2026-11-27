@@ -15,7 +15,7 @@
 <meta name="color-scheme" content="light dark">
 <link rel="manifest" id="manifestLink">
 <link rel="apple-touch-icon" id="appleIcon">
-<link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23e2231a'/%3E%3Ctext x='32' y='43' font-size='30' font-family='Arial' font-weight='800' fill='white' text-anchor='middle'%3EB%3C/text%3E%3C/svg%3E">
+<link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232b5fc4'/%3E%3Ctext x='32' y='43' font-size='30' font-family='Arial' font-weight='800' fill='white' text-anchor='middle'%3EB%3C/text%3E%3C/svg%3E">
 <style>
 /* ============ Neumorphism / iPhone first ============ */
 :root {
@@ -31,7 +31,7 @@
   --out-xs:2px 2px 5px var(--sd), -2px -2px 5px var(--sl);
   --in:inset 5px 5px 10px var(--sd), inset -5px -5px 10px var(--sl);
   --in-sm:inset 3px 3px 6px var(--sd), inset -3px -3px 6px var(--sl);
-  --accent:#3b6fe0; --amber:#d98a00; --danger:#e5484d;
+  --accent:#3b6fe0; --amber:#d98a00; --danger:#3b6fe0;
   --green:#2ea86b; --blue:#3b82c4; --line:rgba(43,54,72,.09); --radius:28px;
 }
 @media (prefers-color-scheme: dark) {
@@ -42,7 +42,7 @@
     --card-bg:linear-gradient(145deg,rgba(255,255,255,.06),rgba(255,255,255,.012)),var(--surface);
     --card-line:rgba(255,255,255,.1); --card-shadow:rgba(0,0,0,.44);
     --sd:rgba(0,0,0,.58); --sl:rgba(255,255,255,.055);
-    --accent:#7ba6ff; --amber:#ffb340; --danger:#ff6b6f; --line:rgba(255,255,255,.08);
+    --accent:#7ba6ff; --amber:#ffb340; --danger:#7ba6ff; --line:rgba(255,255,255,.08);
   }
 }
 :root[data-theme="dark"] {
@@ -52,7 +52,7 @@
   --card-bg:linear-gradient(145deg,rgba(255,255,255,.06),rgba(255,255,255,.012)),var(--surface);
   --card-line:rgba(255,255,255,.1); --card-shadow:rgba(0,0,0,.44);
   --sd:rgba(0,0,0,.58); --sl:rgba(255,255,255,.055);
-  --accent:#7ba6ff; --amber:#ffb340; --danger:#ff6b6f; --line:rgba(255,255,255,.08);
+  --accent:#7ba6ff; --amber:#ffb340; --danger:#7ba6ff; --line:rgba(255,255,255,.08);
 }
 *{-webkit-tap-highlight-color:transparent} html{-webkit-text-size-adjust:100%} [hidden]{display:none!important}
 body{margin:0;min-height:100dvh;background:var(--bg-grad);background-attachment:fixed;color:var(--ink);overflow-x:hidden;touch-action:manipulation;transition:background .35s ease;
@@ -70,6 +70,8 @@ button,input{font-family:inherit} button{cursor:pointer;color:inherit} button:ac
 .theme-btn,.mini-btn{width:34px;height:34px;flex:none;border:0;border-radius:50%;background:var(--surface);box-shadow:var(--out-xs);display:grid;place-items:center;font-size:14px}
 .theme-btn{width:28px;height:28px;font-size:12px}
 .theme-btn:active,.mini-btn:active{box-shadow:var(--in-sm)}
+.theme-btn[aria-pressed="true"]{box-shadow:var(--in-sm);color:var(--accent)}
+body.simple-mode .scenes,body.simple-mode .panel-moves,body.simple-mode .alert-config,body.simple-mode .route-news,body.simple-mode .route-news-list,body.simple-mode .a2hs{display:none!important}
 .a2hs{display:flex;align-items:center;gap:8px;margin-top:5px;padding:6px 9px;border-radius:14px;background:var(--surface);box-shadow:var(--out-sm);font-size:11px;color:var(--ink2);line-height:1.4}
 .a2hs b{color:var(--ink)} .a2hs button{margin-left:auto;flex:none;border:0;border-radius:999px;padding:4px 10px;background:var(--surface);box-shadow:var(--out-xs);color:var(--ink3);font-size:11px}
 .utility-bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
@@ -99,7 +101,7 @@ button,input{font-family:inherit} button{cursor:pointer;color:inherit} button:ac
 
 /* bus */
 .route-badge{min-width:47px;height:47px;flex:none;padding:0 8px;border:0;border-radius:15px;color:#fff;font-size:15px;font-weight:800;
- background:linear-gradient(145deg,#ff5b4e,#e2231a 55%,#bb110c);box-shadow:0 9px 18px rgba(226,35,26,.28),var(--out-xs)}
+ background:linear-gradient(145deg,#4b7fe8,#2b5fc4 55%,#1f4b9c);box-shadow:0 9px 18px rgba(43,95,196,.28),var(--out-xs)}
 .route-title{min-width:0;flex:1}.route-title h1{font-size:16.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .route-title p{margin:3px 0 0;font-size:11.5px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .icon-btn{width:36px;height:36px;flex:none;border:0;border-radius:50%;background:var(--surface);box-shadow:var(--out-sm);color:var(--ink2);display:grid;place-items:center}
@@ -195,7 +197,7 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
 .wx-hours{display:flex;gap:5px;overflow-x:auto;padding:2px 0 4px;margin:0 -2px;scrollbar-width:none}
 .wx-hours::-webkit-scrollbar{display:none}
 .hour{flex:0 0 44px;border-radius:12px;padding:5px 2px;background:var(--surface);box-shadow:var(--out-sm);display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
-.hour.now{box-shadow:var(--in-sm)}.hour .ht{font-size:9px;color:var(--ink3);font-variant-numeric:tabular-nums}
+.hour .ht{font-size:9px;color:var(--ink3);font-variant-numeric:tabular-nums}
 .hour .hi{font-size:15px;line-height:1.1}.hour .hp{font-size:9px;color:var(--blue);font-weight:700;font-variant-numeric:tabular-nums}
 .hour .hc{font-size:10px;font-weight:700;font-variant-numeric:tabular-nums}.hour-empty{font-size:11px;color:var(--ink3);padding:8px 2px}
 .app-open{text-decoration:none;font-size:15px;color:var(--accent)}
@@ -264,6 +266,7 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
     <div class="hero-top">
       <span class="brand"><span class="dot"></span>HK</span>
       <span class="hero-date" id="heroDate">—</span>
+      <button class="theme-btn" id="simpleBtn" type="button" aria-label="切換簡單模式" title="簡單模式" aria-pressed="false">簡</button>
       <button class="theme-btn" id="themeBtn" type="button" aria-label="切換主題" title="切換主題">◐</button>
     </div>
     <div class="a2hs" id="a2hsTip" hidden>
@@ -453,7 +456,7 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
 <noscript><p style="text-align:center;padding:24px">請開啟 JavaScript 以查看實時班次及天氣。</p></noscript>
 <script>
 'use strict';
-const VERSION='1.0.26';
+const VERSION='1.0.27';
 /* ===== config ===== */
 const API = {
   routes: 'https://data.etabus.gov.hk/v1/transport/kmb/route/',
@@ -468,7 +471,7 @@ const API = {
 const KEYS = {
   current:'hkbus.v2.current', routes:'hkbus.v2.routes', stopMap:'hkbus.v2.stopmap',
   routePrefs:'hkbus.v2.routePrefs', stopByKey:'hkbus.v2.stopByKey',
-  walk:'hkbus.v2.walk', walkPresets:'hkbus.v2.walkPresets', alertRepeat:'hkbus.v2.alertRepeat', bgAuto:'hkbus.v2.bgAuto',
+  walk:'hkbus.v2.walk', walkPresets:'hkbus.v2.walkPresets', alertRepeat:'hkbus.v2.alertRepeat', bgAuto:'hkbus.v2.bgAuto', simpleMode:'hkbus.v2.simpleMode',
   pos:'hkbus.v2.pos', weather:'hkbus.v2.weather', hourly:'hkbus.v2.hourly', weatherLoc:'hkbus.v2.weatherLoc',
   hourlyStep:'hkbus.v2.hourlyStep', routeNews:'hkbus.v2.routeNews', panelOrder:'hkbus.v2.panelOrder',
   theme:'hkbus.v2.theme', a2hs:'hkbus.v2.a2hs',
@@ -542,7 +545,7 @@ const state = {
   etas:[], etaFetchedAt:0, etaLoading:false, etaError:null, selectedBus:0,
   userPos:null, walkMin:5, walkPresets:[5,10,15,20],
   favRoutes:[], favStops:[], recentRoutes:[], scenes:[], activeScene:null,
-  theme:'auto', weather:null, hourly:null, weatherLoc:'auto', hourlyStep:3,
+  theme:'auto', simpleMode:false, weather:null, hourly:null, weatherLoc:'auto', hourlyStep:3,
   panelOrder:['bus','weather','hourly','news'], newsVisible:false, news:null,
   routeNews:{}, routeNewsOpen:false,
   alertOn:false, alertMax:0, alertCount:0, audioCtx:null, alertAudio:null, alertPool:[], alertIndex:0, audioUnlocked:false, dueSince:0, alertSuppressedTarget:null, wakeLock:null, wakeLockWanted:true, notifyEnabled:false, leaveNotifiedTarget:null,
@@ -621,6 +624,7 @@ function loadPrefs() {
   state.panelOrder=normalizePanelOrder(po);
   state.notifyEnabled=false;
   state.bgAuto=readJSON(KEYS.bgAuto,false)===true;
+  state.simpleMode=readJSON(KEYS.simpleMode,false)===true;
   state.wakeLockWanted=true;
   state.scenes=readJSON(KEYS.scenes,null);
   if (!Array.isArray(state.scenes) || !state.scenes.length) {
@@ -644,14 +648,14 @@ function ensureValidRoute() {
 
 /* ===== icons / theme / a2hs ===== */
 function installIcons() {
-  const svg="<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='112' fill='#e2231a'/><rect x='118' y='92' width='276' height='320' rx='58' fill='#fff'/><rect x='146' y='126' width='220' height='188' rx='30' fill='#e2231a'/><circle cx='180' cy='352' r='30' fill='#2b3648'/><circle cx='332' cy='352' r='30' fill='#2b3648'/><path d='M168 214h176' stroke='#fff' stroke-width='18' stroke-linecap='round'/></svg>";
+  const svg="<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='112' fill='#2b5fc4'/><rect x='118' y='92' width='276' height='320' rx='58' fill='#fff'/><rect x='146' y='126' width='220' height='188' rx='30' fill='#3b6fe0'/><circle cx='180' cy='352' r='30' fill='#1b2230'/><circle cx='332' cy='352' r='30' fill='#1b2230'/><path d='M168 214h176' stroke='#fff' stroke-width='18' stroke-linecap='round'/></svg>";
   const uri='data:image/svg+xml,'+encodeURIComponent(svg);
   $('#favicon').href=uri;
   const manifest={name:'巴士到站 · 香港天氣 · 出門口倒數',short_name:'巴士 · HK',start_url:'.',scope:'.',display:'standalone',orientation:'portrait',background_color:'#e9eef5',theme_color:'#e9eef5',description:'九巴／龍運到站、天氣同出門口倒數。',icons:[{src:uri,sizes:'any',type:'image/svg+xml',purpose:'any maskable'}]};
   $('#manifestLink').href='data:application/manifest+json,'+encodeURIComponent(JSON.stringify(manifest));
   try {
     const c=document.createElement('canvas'); c.width=c.height=180; const g=c.getContext('2d');
-    const grad=g.createLinearGradient(0,0,180,180); grad.addColorStop(0,'#ff5b4e'); grad.addColorStop(1,'#bb110c'); g.fillStyle=grad;
+    const grad=g.createLinearGradient(0,0,180,180); grad.addColorStop(0,'#4b7fe8'); grad.addColorStop(1,'#1f4b9c'); g.fillStyle=grad;
     g.beginPath(); if(g.roundRect) g.roundRect(0,0,180,180,40); else g.rect(0,0,180,180); g.fill();
     g.fillStyle='#fff'; g.font='800 70px -apple-system,Arial,sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('BUS',90,94);
     $('#appleIcon').href=c.toDataURL('image/png');
@@ -665,6 +669,17 @@ function applyTheme(t) {
   try { localStorage.setItem(KEYS.theme,t); } catch {}
 }
 
+function applySimpleMode() {
+  document.body.classList.toggle('simple-mode',!!state.simpleMode);
+  const b=$('#simpleBtn');
+  if (b) { b.setAttribute('aria-pressed',String(!!state.simpleMode)); b.textContent=state.simpleMode?'詳':'簡'; }
+}
+function toggleSimpleMode() {
+  state.simpleMode=!state.simpleMode;
+  writeJSON(KEYS.simpleMode,state.simpleMode);
+  applySimpleMode();
+  toast(state.simpleMode?'簡單模式：已收起進階控制':'簡單模式：已還原全部控制');
+}
 function renderUtilityButtons() {
   const wakeBtn=$('#wakeBtn'), notifyBtn=$('#notifyBtn'), bgBtn=$('#bgAudioBtn');
   if (wakeBtn) { const on=!!state.wakeLockWanted; const extra=(on&&!state.wakeLock)?'（未取得）':''; wakeBtn.textContent='保持螢幕：'+(on?'開':'關')+extra; wakeBtn.setAttribute('aria-pressed',String(on)); }
@@ -785,7 +800,7 @@ const isFavStop=(id)=>state.favStops.includes(id);
 /* ===== boot ===== */
 async function bootstrap() {
   $('#versionTag').textContent='v'+VERSION;
-  installIcons(); purgeLegacyPrefs(); loadPrefs(); applyTheme(state.theme); applyPanelOrder(state.panelOrder); checkA2HS();
+  installIcons(); purgeLegacyPrefs(); loadPrefs(); applyTheme(state.theme); applySimpleMode(); applyPanelOrder(state.panelOrder); checkA2HS();
   bindEvents(); updateDateLabels(); renderScenes(); renderBus(); renderWalkPresets(); renderLeave(); renderUtilityButtons(); renderNews();
   if (state.wakeLockWanted) requestWakeLock(true);
   await Promise.allSettled([loadRouteList(),loadStopMap(),loadWeather()]);
@@ -1210,7 +1225,7 @@ function tickLeave() {
       panel.classList.toggle('due',armed); panel.classList.toggle('soon',!armed);
       panel.classList.remove('near');
       const prepMs=Math.max(0,15000-(Date.now()-state.dueSince));
-      count.textContent=!armed?`準備出發 ${fmtCountdown(prepMs)}`:(arrivalDiff>0?`還有 ${fmtCountdown(arrivalDiff)} 到站`:'已到站');
+      count.textContent=!armed?`準備出發 ${fmtCountdown(prepMs)}`:(arrivalDiff>0?`到站 ${fmtCountdown(arrivalDiff)}`:'已到站');
       const barText=$('#alertBarText'); if (barText) barText.textContent=armed?'🔔 已出門 · 到站倒數中（聲音／震動）':'🔔 出門提示持續中（聲音／震動）';
       if (state.alertSuppressedTarget!==info.target) startLeaveAlert();
     } else {
@@ -1379,7 +1394,7 @@ function updateBgMetadata(info) {
       const arrival=timeOf(info.target+state.walkMin*60000);
       if (diff>0 && !state.arrivalPhase) {
         const mins=Math.ceil(diff/60000);
-        title=`還有 ${fmtCountdown(diff)} 出門`;
+        title=`出門 ${fmtCountdown(diff)}`;
         artist=`🚪 ${timeOf(info.target)} 出門 · 🚌 ${arrival} 到站 · ${route}`;
         icon=(mins>=1&&mins<=20)?`png/${mins}.png`:'png/bus.png';
       } else {
@@ -1763,6 +1778,7 @@ function toast(msg) {
 function tick() { tickEtas(); tickLeave(); }
 /* ===== events ===== */
 function bindEvents() {
+  $('#simpleBtn').addEventListener('click',toggleSimpleMode);
   $('#themeBtn').addEventListener('click',cycleTheme);
   $('#a2hsClose').addEventListener('click',closeA2HS);
   $('#routeBtn').addEventListener('click',openRouteSheet);
