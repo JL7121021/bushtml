@@ -140,6 +140,8 @@ button,input{font-family:inherit} button{cursor:pointer;color:inherit} button:ac
 .alert-bar[hidden]{display:none}
 .alert-bar.floating{position:fixed;top:calc(8px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:70;max-width:92vw;box-shadow:0 10px 30px rgba(0,0,0,.25),inset 3px 0 0 var(--danger)}
 .leave-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.notify-toggle{border:0;border-radius:999px;padding:7px 11px;white-space:nowrap;background:var(--surface);box-shadow:var(--out-sm);color:var(--accent);font-size:11px;font-weight:700}
+.notify-toggle[aria-pressed="true"]{box-shadow:var(--in-sm)}
 .leave-walk{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink2)}
 .stepper{display:inline-flex;align-items:center;gap:5px;padding:4px;border-radius:12px;background:var(--surface);box-shadow:var(--in-sm);font-variant-numeric:tabular-nums}
 .stepper button{width:25px;height:25px;border:0;border-radius:9px;background:var(--surface);box-shadow:var(--out-xs);font-size:15px;display:grid;place-items:center}
@@ -212,7 +214,6 @@ button,input{font-family:inherit} button{cursor:pointer;color:inherit} button:ac
     </div>
     <div class="utility-bar" aria-label="背景與通知">
       <button class="util-btn" id="wakeBtn" type="button" aria-pressed="false">保持螢幕：關</button>
-      <button class="util-btn" id="notifyBtn" type="button" aria-pressed="false">出門通知：關</button>
       <button class="util-btn" id="soundTestBtn" type="button">🔊 測試提示音</button>
     </div>
     <div class="a2hs" id="a2hsTip" hidden>
@@ -262,6 +263,7 @@ button,input{font-family:inherit} button{cursor:pointer;color:inherit} button:ac
             <button type="button" id="walkPlus" aria-label="增加一分鐘">＋</button>
           </div>
         </div>
+        <button class="notify-toggle" id="notifyBtn" type="button" aria-pressed="false">出門通知：開</button>
       </div>
       <div class="eta-foot"><span id="etaUpdated">—</span><span class="auto-tag"><i></i>自動更新</span></div>
     </section>
@@ -334,7 +336,7 @@ button,input{font-family:inherit} button{cursor:pointer;color:inherit} button:ac
 <noscript><p style="text-align:center;padding:24px">請開啟 JavaScript 以查看實時班次及天氣。</p></noscript>
 <script>
 'use strict';
-const VERSION='1.0.0';
+const VERSION='1.0.1';
 /* ===== config ===== */
 const API = {
   routes: 'https://data.etabus.gov.hk/v1/transport/kmb/route/',
@@ -424,7 +426,7 @@ const state = {
   favRoutes:[], favStops:[], recentRoutes:[], scenes:[], activeScene:null,
   theme:'auto', weather:null, hourly:null, weatherLoc:'auto',
   panelOrder:['bus','weather','hourly'],
-  alertOn:false, audioCtx:null, alertAudio:null, alertPool:[], alertIndex:0, audioUnlocked:false, dueSince:0, wakeLock:null, wakeLockWanted:false, notifyEnabled:false, leaveNotifiedTarget:null,
+  alertOn:false, audioCtx:null, alertAudio:null, alertPool:[], alertIndex:0, audioUnlocked:false, dueSince:0, wakeLock:null, wakeLockWanted:false, notifyEnabled:true, leaveNotifiedTarget:null,
 };
 let etaToken=0, wxToken=0, hourlyToken=0, toastTimer=null, alertTimer=null;
 function readJSON(k,f){ try { const s=localStorage.getItem(k); return s?JSON.parse(s):f; } catch { return f; } }
@@ -490,7 +492,7 @@ function loadPrefs() {
   if (!['auto','light','dark'].includes(state.theme)) state.theme='auto';
   const po=readJSON(KEYS.panelOrder,null);
   state.panelOrder=normalizePanelOrder(po);
-  state.notifyEnabled=readJSON(KEYS.notify,false)===true;
+  state.notifyEnabled=true;
   state.wakeLockWanted=readJSON(KEYS.wake,false)===true;
   state.scenes=readJSON(KEYS.scenes,null);
   if (!Array.isArray(state.scenes) || !state.scenes.length) {
@@ -571,10 +573,10 @@ async function sendLeaveNotification(title, body) {
 }
 async function toggleNotify() {
   if (!('Notification' in window)) { toast('此瀏覽器不支援通知'); return; }
-  if (state.notifyEnabled) {
+  let perm=Notification.permission;
+  if (state.notifyEnabled && perm==='granted') {
     state.notifyEnabled=false; writeJSON(KEYS.notify,false); renderUtilityButtons(); toast('已關閉出門通知'); return;
   }
-  let perm=Notification.permission;
   if (perm==='default') { try { perm=await Notification.requestPermission(); } catch { perm='denied'; } }
   if (perm!=='granted') { state.notifyEnabled=false; writeJSON(KEYS.notify,false); renderUtilityButtons(); toast(perm==='denied'?'通知權限已被封鎖':'未授權通知'); return; }
   state.notifyEnabled=true; writeJSON(KEYS.notify,true); renderUtilityButtons(); toast('出門通知已開啟');
