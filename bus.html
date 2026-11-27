@@ -398,6 +398,7 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
     <div class="utility-bar footer-utilities" aria-label="背景與測試音">
       <button class="util-btn" id="wakeBtn" type="button" aria-pressed="true">保持螢幕：開</button>
       <button class="util-btn" id="soundTestBtn" type="button">🔊 測試提示音</button>
+      <button class="util-btn" id="bgAudioBtn" type="button" aria-pressed="false" title="試驗功能：用 Media Session 保持背景音訊工作">背景音訊：關</button>
     </div>
     資料來源：<a href="https://data.gov.hk/tc-data/dataset/hk-td-tis_21-etakmb" target="_blank" rel="noopener">九巴／龍運開放數據</a> · <a href="https://search.kmb.hk/KMBWebSite?action=routesearch&amp;lang=zh-hk" target="_blank" rel="noopener">九巴官方路線消息</a> · <a href="https://www.hko.gov.hk/tc/index.html" target="_blank" rel="noopener">香港天文台</a> · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a><br>
     非官方工具 · 資料僅供參考，不作任何保證 · <span id="versionTag"></span><br>
@@ -451,7 +452,7 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
 <noscript><p style="text-align:center;padding:24px">請開啟 JavaScript 以查看實時班次及天氣。</p></noscript>
 <script>
 'use strict';
-const VERSION='1.0.14';
+const VERSION='1.0.15';
 /* ===== config ===== */
 const API = {
   routes: 'https://data.etabus.gov.hk/v1/transport/kmb/route/',
@@ -543,6 +544,7 @@ const state = {
   panelOrder:['bus','weather','hourly','news'], newsVisible:false, news:null,
   routeNews:{}, routeNewsOpen:false,
   alertOn:false, alertMax:0, alertCount:0, audioCtx:null, alertAudio:null, alertPool:[], alertIndex:0, audioUnlocked:false, dueSince:0, alertSuppressedTarget:null, wakeLock:null, wakeLockWanted:true, notifyEnabled:false, leaveNotifiedTarget:null,
+  bgAudioOn:false, bgAudioEl:null,
 };
 let etaToken=0, wxToken=0, hourlyToken=0, newsToken=0, routeNewsToken=0, toastTimer=null, alertTimer=null;
 function readJSON(k,f){ try { const s=localStorage.getItem(k); return s?JSON.parse(s):f; } catch { return f; } }
@@ -661,9 +663,10 @@ function applyTheme(t) {
 }
 
 function renderUtilityButtons() {
-  const wakeBtn=$('#wakeBtn'), notifyBtn=$('#notifyBtn');
+  const wakeBtn=$('#wakeBtn'), notifyBtn=$('#notifyBtn'), bgBtn=$('#bgAudioBtn');
   if (wakeBtn) { const on=!!state.wakeLockWanted; const extra=(on&&!state.wakeLock)?'（未取得）':''; wakeBtn.textContent='保持螢幕：'+(on?'開':'關')+extra; wakeBtn.setAttribute('aria-pressed',String(on)); }
   if (notifyBtn) { const on=!!state.notifyEnabled; const perm=('Notification' in window)?Notification.permission:'unsupported'; let extra=''; if(on&&perm!=='granted') extra='（'+(perm==='denied'?'已封鎖':'未授權')+'）'; notifyBtn.textContent='出門通知：'+(on?'開':'關')+extra; notifyBtn.setAttribute('aria-pressed',String(on)); }
+  if (bgBtn) { const on=!!state.bgAudioOn; bgBtn.textContent='背景音訊：'+(on?'開':'關'); bgBtn.setAttribute('aria-pressed',String(on)); }
 }
 async function requestWakeLock(silent=false) {
   if (!('wakeLock' in navigator)) { if(!silent) toast('此瀏覽器不支援保持螢幕'); return false; }
@@ -1308,6 +1311,74 @@ function unlockAudio() {
 }
 function beep() { playAlertAudio(); }
 function buzz() { try { if(!navigator.vibrate) return; if(navigator.userActivation && !navigator.userActivation.hasBeenActive) return; navigator.vibrate([400,200,400,200,800]); } catch {} }
+
+/* ===== optional Media Session background experiment =====
+   完全獨立、預設關閉；關掉就等於冇呢段 code。要還原可直接移除本區塊同 bgAudioBtn。 */
+function makeSilentURI(seconds=4) {
+  try {
+    const rate=8000, n=Math.floor(rate*seconds), buf=new ArrayBuffer(44+n*2), v=new DataView(buf);
+    const put=(o,s)=>{ for(let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); };
+    put(0,'RIFF'); v.setUint32(4,36+n*2,true); put(8,'WAVE'); put(12,'fmt ');
+    v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+    v.setUint32(24,rate,true); v.setUint32(28,rate*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true);
+    put(36,'data'); v.setUint32(40,n*2,true);
+    for(let i=0;i<n;i++) v.setInt16(44+i*2,(i%2)?1:-1,true); // 幅度 1/32768：實際靜音
+    const bytes=new Uint8Array(buf); let s='';
+    for(let i=0;i<bytes.length;i+=8192) s+=String.fromCharCode.apply(null,bytes.subarray(i,i+8192));
+    return 'data:audio/wav;base64,'+btoa(s);
+  } catch { return ''; }
+}
+function setupMediaSession() {
+  try {
+    if (!('mediaSession' in navigator)) return;
+    try {
+      navigator.mediaSession.metadata=new MediaMetadata({
+        title:'巴士天氣助手 · 出門提醒', artist:'背景模式（試驗）', album:'九巴／龍運到站'
+      });
+    } catch {}
+    const set=(action,handler)=>{ try { navigator.mediaSession.setActionHandler(action,handler); } catch {} };
+    set('play',()=>{
+      try { if (state.bgAudioEl) { const p=state.bgAudioEl.play(); if(p&&p.catch) p.catch(()=>{}); } } catch {}
+      toast('背景音訊已繼續');
+    });
+    set('pause',()=>{ try { state.bgAudioEl?.pause(); } catch {} toast('背景音訊已暫停'); });
+    set('stop',()=>stopBgAudio());
+    set('previoustrack',()=>{});
+    set('nexttrack',()=>{});
+  } catch {}
+}
+function startBgAudio() {
+  if (state.bgAudioOn) return true;
+  if (!window.Audio) { toast('此瀏覽器不支援背景音訊'); return false; }
+  const uri=makeSilentURI(); if (!uri) { toast('無法建立背景音訊'); return false; }
+  try { if ('audioSession' in navigator) navigator.audioSession.type='playback'; } catch {}
+  try {
+    const a=new Audio(uri); a.loop=true; a.volume=.35; a.preload='auto'; a.setAttribute('playsinline','');
+    const p=a.play(); if(p&&p.catch) p.catch(()=>{});
+    state.bgAudioEl=a;
+  } catch { toast('無法啟動背景音訊'); return false; }
+  state.bgAudioOn=true;
+  setupMediaSession();
+  renderUtilityButtons();
+  toast('背景音訊已開啟（試驗功能）');
+  return true;
+}
+function stopBgAudio(silent=false) {
+  if (!state.bgAudioOn && !state.bgAudioEl) return;
+  try { if (state.bgAudioEl) { state.bgAudioEl.pause(); state.bgAudioEl.src=''; state.bgAudioEl.load(); } } catch {}
+  state.bgAudioEl=null; state.bgAudioOn=false;
+  try { if ('audioSession' in navigator) navigator.audioSession.type='auto'; } catch {}
+  try {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata=null;
+      ['play','pause','stop','previoustrack','nexttrack'].forEach(a=>{ try { navigator.mediaSession.setActionHandler(a,null); } catch {} });
+    }
+  } catch {}
+  renderUtilityButtons();
+  if (!silent) toast('背景音訊已關閉（完全靜音）');
+}
+function toggleBgAudio() { if (state.bgAudioOn) stopBgAudio(); else startBgAudio(); }
+
 function startLeaveAlert() {
   if (state.alertOn || !state.notifyEnabled) return;
   state.alertSuppressedTarget=null;
@@ -1580,6 +1651,11 @@ function bindEvents() {
   $('#routeNewsMore').addEventListener('click',toggleRouteNews);
   $('#wakeBtn').addEventListener('click',toggleWakeLock);
   $('#notifyBtn').addEventListener('click',toggleNotify);
+  $('#bgAudioBtn').addEventListener('click',toggleBgAudio);
+  document.addEventListener('visibilitychange',()=>{
+    if (!state.bgAudioOn || !state.bgAudioEl) return;
+    try { if (state.bgAudioEl.paused) { const p=state.bgAudioEl.play(); if(p&&p.catch) p.catch(()=>{}); } } catch {}
+  });
   $('#soundTestBtn').addEventListener('click',()=>{
     unlockAudio(); playTestSound(); buzz();
     toast(navigator.vibrate?'已播放測試提示音及震動':'已播放測試提示音（此瀏覽器不支援震動）');
