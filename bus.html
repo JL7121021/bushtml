@@ -1043,13 +1043,13 @@ function startLeaveAlert() {
   if (state.alertOn) return;
   state.alertOn=true; ensureAudio(); beep(); buzz();
   alertTimer=setInterval(()=>{ beep(); buzz(); },3000);
-  renderEta(); toast('出門提示已開啟 · 按「停止提示」關閉');
+  renderEta(); tickLeave(); toast('出門提示已開啟 · 按「停止提示」關閉');
 }
 function stopLeaveAlert() {
   if (alertTimer) { clearInterval(alertTimer); alertTimer=null; }
   try { if(navigator.vibrate) navigator.vibrate(0); } catch {}
   if (!state.alertOn) return;
-  state.alertOn=false; renderEta(); toast('已停止出門提示');
+  state.alertOn=false; renderEta(); tickLeave(); toast('已停止出門提示');
 }
 /* ===== weather + 3-hour forecast ===== */
 function rainNowText(cur) {
