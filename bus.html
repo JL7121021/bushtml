@@ -453,7 +453,7 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
 <noscript><p style="text-align:center;padding:24px">請開啟 JavaScript 以查看實時班次及天氣。</p></noscript>
 <script>
 'use strict';
-const VERSION='1.0.25';
+const VERSION='1.0.26';
 /* ===== config ===== */
 const API = {
   routes: 'https://data.etabus.gov.hk/v1/transport/kmb/route/',
@@ -475,6 +475,7 @@ const KEYS = {
   favRoutes:'hkbus.v2.favRoutes', favStops:'hkbus.v2.favStops', recentRoutes:'hkbus.v2.recentRoutes',
   scenes:'hkbus.v2.scenes', activeScene:'hkbus.v2.activeScene', alert:'hkbus.v2.alert', etaCache:'hkbus.v2.etaCache',
 };
+const MEDIA_OWNER_KEY='hkbus.v2.mediaOwner', MEDIA_OWNER_TTL=12000;
 const HK_TZ = 'Asia/Hong_Kong', HK_DEFAULT = { lat:22.3027, lng:114.1772 };
 const REFRESH_ETA_MS = 20000, REFRESH_WX_MS = 10*60*1000, DAY_MS = 86400000;
 const DISTRICTS = [
@@ -545,7 +546,7 @@ const state = {
   panelOrder:['bus','weather','hourly','news'], newsVisible:false, news:null,
   routeNews:{}, routeNewsOpen:false,
   alertOn:false, alertMax:0, alertCount:0, audioCtx:null, alertAudio:null, alertPool:[], alertIndex:0, audioUnlocked:false, dueSince:0, alertSuppressedTarget:null, wakeLock:null, wakeLockWanted:true, notifyEnabled:false, leaveNotifiedTarget:null,
-  bgAudioOn:false, bgAudioEl:null, bgAuto:false, bgAutoStarted:false, bgMetaKey:'', arrivalPhase:false, arrivalPhaseTarget:null,
+  bgAudioOn:false, bgAudioEl:null, bgAuto:false, bgAutoStarted:false, bgMetaKey:'', bgMetaIcon:'', tabId:(Math.random().toString(36).slice(2)+Date.now().toString(36)), arrivalPhase:false, arrivalPhaseTarget:null,
 };
 let etaToken=0, wxToken=0, hourlyToken=0, newsToken=0, routeNewsToken=0, toastTimer=null, alertTimer=null;
 function readJSON(k,f){ try { const s=localStorage.getItem(k); return s?JSON.parse(s):f; } catch { return f; } }
@@ -700,7 +701,7 @@ async function sendLeaveNotification(title, body) {
 }
 async function toggleNotify() {
   // 借呢個真實觸控手勢啟動背景音訊，iOS 先會允許離開頁面後保留動態島入口
-  if (startBgAudio(true)) { state.bgAuto=true; writeJSON(KEYS.bgAuto,true); state.bgAutoStarted=false; }
+  if (startBgAudio(true,true)) { state.bgAuto=true; writeJSON(KEYS.bgAuto,true); state.bgAutoStarted=false; }
   if (!('Notification' in window)) { toast('此瀏覽器不支援通知'); return; }
   let perm=Notification.permission;
   if (state.notifyEnabled && perm==='granted') {
@@ -713,7 +714,7 @@ async function toggleNotify() {
 }
 async function autoNotifyOn() {
   // 改提前分鐘通常係一次觸控，趁機自動開通知同背景入口
-  if (startBgAudio(true)) { state.bgAuto=true; writeJSON(KEYS.bgAuto,true); }
+  if (startBgAudio(true,true)) { state.bgAuto=true; writeJSON(KEYS.bgAuto,true); }
   if (state.notifyEnabled) return;
   if (!('Notification' in window) || Notification.permission==='denied') return;
   let perm=Notification.permission;
@@ -792,6 +793,7 @@ async function bootstrap() {
   await loadStops();
   refreshEta(); loadHourly();
   setInterval(tick,1000);
+  setInterval(keepMediaOwner,4000);
   setInterval(updateDateLabels,60000);
   setInterval(()=>{ if(!document.hidden) refreshEta(); },REFRESH_ETA_MS);
   setInterval(()=>{ if(!document.hidden) loadWeather(); },REFRESH_WX_MS);
@@ -1403,14 +1405,19 @@ function updateBgMetadata(info) {
     const album=state.alertOn?'🔔 提示響鬧中':'🚌 九巴／龍運到站';
     const key=title+'|'+artist+'|'+album+'|'+icon;
     if (key!==state.bgMetaKey) {
-      state.bgMetaKey=key;
+      const iconChanged=icon!==state.bgMetaIcon;
+      state.bgMetaKey=key; state.bgMetaIcon=icon;
       const meta=new MediaMetadata({
         title, artist, album,
         artwork:[{src:new URL(icon,location.href).href,sizes:'512x512',type:'image/png'}]
       });
-      // iOS 會快取 metadata；先清空再重設，強制動態島／鎖屏刷新
-      try { navigator.mediaSession.metadata=null; } catch {}
-      setTimeout(()=>{ try { navigator.mediaSession.metadata=meta; } catch {} },0);
+      // 每秒倒數只直接替換；只有圖示切換時先清空再重設，避免 iOS 不停重啟 session 交畀其他 PWA
+      if (iconChanged) {
+        try { navigator.mediaSession.metadata=null; } catch {}
+        setTimeout(()=>{ try { navigator.mediaSession.metadata=meta; } catch {} },0);
+      } else {
+        try { navigator.mediaSession.metadata=meta; } catch {}
+      }
     }
     navigator.mediaSession.playbackState=state.bgAudioOn?'playing':'paused';
   } catch {}
@@ -1418,7 +1425,7 @@ function updateBgMetadata(info) {
 function setupMediaSession() {
   try {
     if (!('mediaSession' in navigator)) return;
-    state.bgMetaKey=''; updateBgMetadata();
+    updateBgMetadata();
     const set=(action,handler)=>{ try { navigator.mediaSession.setActionHandler(action,handler); } catch {} };
     set('play',()=>{
       try { if (state.bgAudioEl) { const p=state.bgAudioEl.play(); if(p&&p.catch) p.catch(()=>{}); } } catch {}
@@ -1430,8 +1437,30 @@ function setupMediaSession() {
     set('nexttrack',()=>{});
   } catch {}
 }
-function startBgAudio(silent=false) {
-  if (state.bgAudioOn) return true;
+function mediaOwnerGet() { return readJSON(MEDIA_OWNER_KEY,null); }
+function claimMediaOwner(force=false) {
+  try {
+    const o=mediaOwnerGet(), now=Date.now();
+    if (!force && o && o.id!==state.tabId && now-(o.ts||0)<MEDIA_OWNER_TTL) return false;
+    writeJSON(MEDIA_OWNER_KEY,{id:state.tabId,ts:now});
+    return true;
+  } catch { return true; }
+}
+function releaseMediaOwner() {
+  try { const o=mediaOwnerGet(); if (o && o.id===state.tabId) localStorage.removeItem(MEDIA_OWNER_KEY); } catch {}
+}
+function keepMediaOwner() {
+  if (!state.bgAudioOn) return;
+  const o=mediaOwnerGet(), now=Date.now();
+  if (!o || o.id===state.tabId || now-(o.ts||0)>=MEDIA_OWNER_TTL) {
+    writeJSON(MEDIA_OWNER_KEY,{id:state.tabId,ts:now});
+    return;
+  }
+  stopBgAudio(true); // 另一分頁持有，避免兩個音訊 session 互相搶動態島
+}
+function startBgAudio(silent=false, force=false) {
+  if (state.bgAudioOn) { if (force) claimMediaOwner(true); return true; }
+  if (!claimMediaOwner(force)) { if (!silent) toast('背景音訊已由另一分頁使用'); return false; }
   if (!window.Audio) { if(!silent) toast('此瀏覽器不支援背景音訊'); return false; }
   const uri=makeSilentURI(); if (!uri) { if(!silent) toast('無法建立背景音訊'); return false; }
   try { if ('audioSession' in navigator) navigator.audioSession.type='playback'; } catch {}
@@ -1450,6 +1479,7 @@ function stopBgAudio(silent=false) {
   if (!state.bgAudioOn && !state.bgAudioEl) return;
   try { if (state.bgAudioEl) { state.bgAudioEl.pause(); state.bgAudioEl.src=''; state.bgAudioEl.load(); } } catch {}
   state.bgAudioEl=null; state.bgAudioOn=false;
+  releaseMediaOwner();
   try { if ('audioSession' in navigator) navigator.audioSession.type='auto'; } catch {}
   try {
     if ('mediaSession' in navigator) {
@@ -1468,11 +1498,11 @@ function toggleBgAudio() {
     state.bgAuto=false; writeJSON(KEYS.bgAuto,false);
     return;
   }
-  if (startBgAudio()) { state.bgAuto=true; writeJSON(KEYS.bgAuto,true); }
+  if (startBgAudio(false,true)) { state.bgAuto=true; writeJSON(KEYS.bgAuto,true); }
 }
 function autoBgAudioStart() {
   if (!state.bgAuto || state.bgAudioOn) return;
-  if (startBgAudio(true)) state.bgAutoStarted=true;
+  if (startBgAudio(true,false)) state.bgAutoStarted=true;
 }
 function autoBgAudioStop() {
   if (!state.bgAutoStarted) return;
@@ -1755,15 +1785,20 @@ function bindEvents() {
   $('#markLeftBtn').addEventListener('click',markLeft);
   $('#bgAudioBtn').addEventListener('click',toggleBgAudio);
   document.addEventListener('visibilitychange',()=>{
-    if (document.visibilityState==='hidden') { autoBgAudioStart(); return; }
-    // 返回時保持音訊 session，唔好清空 metadata；避免 iOS 將動態島交畀另一個 PWA／分頁
-    if (state.bgAuto && !state.bgAudioOn) { startBgAudio(true); state.bgAutoStarted=true; }
-    if (state.bgAudioOn && state.bgAudioEl) {
-      try { if (state.bgAudioEl.paused) { const p=state.bgAudioEl.play(); if(p&&p.catch) p.catch(()=>{}); } } catch {}
-      state.bgMetaKey=''; updateBgMetadata();
+    // 鎖屏／背景化時唔新開音訊，避免建立第二個 session 畀 iOS 交去其他分頁
+    if (document.visibilityState!=='visible') return;
+    if (state.bgAuto) {
+      claimMediaOwner(true);
+      if (!state.bgAudioOn) startBgAudio(true,true);
+      else { try { if (state.bgAudioEl?.paused) { const p=state.bgAudioEl.play(); if(p&&p.catch) p.catch(()=>{}); } } catch {} }
     }
+    updateBgMetadata();
   });
-  document.addEventListener('pointerdown',()=>{ if (state.bgAuto) startBgAudio(true); },{passive:true});
+  document.addEventListener('pointerdown',()=>{
+    if (!state.bgAuto) return;
+    claimMediaOwner(true);
+    startBgAudio(true,true);
+  },{passive:true});
   $('#soundTestBtn').addEventListener('click',()=>{
     unlockAudio(); playTestSound(); buzz();
     toast(navigator.vibrate?'已播放測試提示音及震動':'已播放測試提示音（此瀏覽器不支援震動）');
@@ -1786,7 +1821,7 @@ function bindEvents() {
   $('#alertRepeat').addEventListener('change',(e)=>{
     const n=Number(e.target.value); state.alertMax=[0,3,5,10].includes(n)?n:0;
     writeJSON(KEYS.alertRepeat,state.alertMax);
-    if (startBgAudio(true)) { state.bgAuto=true; writeJSON(KEYS.bgAuto,true); }
+    if (startBgAudio(true,true)) { state.bgAuto=true; writeJSON(KEYS.bgAuto,true); }
     toast(state.alertMax?`提示會響 ${state.alertMax} 次`:'提示會持續響');
   });
   $$('[data-walk]').forEach(b=>b.addEventListener('click',()=>{
