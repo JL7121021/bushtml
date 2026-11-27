@@ -4,7 +4,7 @@ iPhone 優先嘅單頁工具：九巴／龍運到站、香港天氣、24 小時�
 
 🌐 網站：https://jl7121021.github.io/bushtml/  
 ⭐ GitHub 專案：https://github.com/JL7121021/bushtml — 覺得有用歡迎給個 star！  
-目前版本：**v1.0.12**（頁尾會顯示）。
+目前版本：**v1.0.13**（頁尾會顯示）。
 
 ## 主要功能
 
