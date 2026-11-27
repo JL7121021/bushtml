@@ -323,6 +323,7 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
           </div>
         </div>
         <button class="notify-toggle" id="notifyBtn" type="button" aria-pressed="false">出門通知：關</button>
+        <button class="notify-toggle" id="markLeftBtn" type="button">出門了</button>
       </div>
       <div class="alert-config">
         <label>提示次數
@@ -452,7 +453,7 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
 <noscript><p style="text-align:center;padding:24px">請開啟 JavaScript 以查看實時班次及天氣。</p></noscript>
 <script>
 'use strict';
-const VERSION='1.0.21';
+const VERSION='1.0.22';
 /* ===== config ===== */
 const API = {
   routes: 'https://data.etabus.gov.hk/v1/transport/kmb/route/',
@@ -544,7 +545,7 @@ const state = {
   panelOrder:['bus','weather','hourly','news'], newsVisible:false, news:null,
   routeNews:{}, routeNewsOpen:false,
   alertOn:false, alertMax:0, alertCount:0, audioCtx:null, alertAudio:null, alertPool:[], alertIndex:0, audioUnlocked:false, dueSince:0, alertSuppressedTarget:null, wakeLock:null, wakeLockWanted:true, notifyEnabled:false, leaveNotifiedTarget:null,
-  bgAudioOn:false, bgAudioEl:null, bgAuto:false, bgAutoStarted:false, bgMetaKey:'', arrivalPhase:false,
+  bgAudioOn:false, bgAudioEl:null, bgAuto:false, bgAutoStarted:false, bgMetaKey:'', arrivalPhase:false, arrivalPhaseTarget:null,
 };
 let etaToken=0, wxToken=0, hourlyToken=0, newsToken=0, routeNewsToken=0, toastTimer=null, alertTimer=null;
 function readJSON(k,f){ try { const s=localStorage.getItem(k); return s?JSON.parse(s):f; } catch { return f; } }
@@ -1178,8 +1179,18 @@ function renderLeave() {
   $$('[data-walk]').forEach(b=>b.classList.toggle('active',Number(b.dataset.walk)===state.walkMin));
   renderEta(); tickLeave();
 }
+function markLeft() {
+  const info=leaveInfo();
+  state.arrivalPhase=true;
+  state.arrivalPhaseTarget=info.target;
+  state.dueSince=Math.min(state.dueSince||Date.now(),Date.now()-15000);
+  tickLeave(); toast('已改為到站倒數');
+}
 function tickLeave() {
   const info=leaveInfo(), panel=$('#ridePanel'), count=$('#leaveCountdown'), note=$('#leaveSub');
+  if (state.arrivalPhase && state.arrivalPhaseTarget!=null && info.target!==state.arrivalPhaseTarget) {
+    state.arrivalPhase=false; state.arrivalPhaseTarget=null;
+  }
   if (!panel||!count) return;
   if (info.target==null||!Number.isFinite(info.target)) {
     state.dueSince=0;
@@ -1735,6 +1746,7 @@ function bindEvents() {
   $('#routeNewsMore').addEventListener('click',toggleRouteNews);
   $('#wakeBtn').addEventListener('click',toggleWakeLock);
   $('#notifyBtn').addEventListener('click',toggleNotify);
+  $('#markLeftBtn').addEventListener('click',markLeft);
   $('#bgAudioBtn').addEventListener('click',toggleBgAudio);
   document.addEventListener('visibilitychange',()=>{
     if (document.visibilityState==='hidden') { autoBgAudioStart(); return; }
@@ -1791,11 +1803,7 @@ function bindEvents() {
   });
   $('#alertBar').addEventListener('click',(e)=>{
     if (e.target.closest('[data-action="stop-alert"]')) { stopLeaveAlert(); return; }
-    if (e.target.closest('[data-action="mark-left"]')) {
-      state.arrivalPhase=true;
-      state.dueSince=Math.min(state.dueSince||Date.now(),Date.now()-15000);
-      tickLeave(); toast('已改為到站倒數');
-    }
+    if (e.target.closest('[data-action="mark-left"]')) markLeft();
   });
   $('#routeSearch').addEventListener('input',(e)=>renderRouteList(e.target.value));
   $('#stopSearch').addEventListener('input',(e)=>renderStopList(e.target.value));
