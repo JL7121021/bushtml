@@ -136,11 +136,11 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
 .ride-rows{margin-top:11px}.ride-row{display:flex;align-items:center;gap:9px;padding:8px 2px;font-size:12.5px;border-bottom:1px solid var(--line)}
 .ride-row:last-child{border-bottom:0}.ride-row .t{color:var(--ink2);min-width:46px;font-variant-numeric:tabular-nums}
 .ride-row .m{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums}.ride-row .m span{font-size:10px;font-weight:500;color:var(--ink3);margin-left:2px}
-.alert-bar{display:flex;align-items:center;gap:8px;margin-top:12px;padding:10px 12px;border-radius:14px;background:var(--surface);box-shadow:var(--in-sm),inset 3px 0 0 var(--danger);font-size:12px}
-.alert-bar button{margin-left:auto;flex:none;border:0;border-radius:999px;padding:6px 12px;background:var(--surface);box-shadow:var(--out-xs);color:var(--danger);font-size:11px;font-weight:700}
+.alert-bar{display:flex;align-items:center;gap:10px;margin-top:12px;padding:12px 14px;border-radius:14px;background:var(--surface);box-shadow:var(--in-sm),inset 3px 0 0 var(--danger);font-size:13px}
+.alert-bar button{margin-left:auto;flex:none;border:0;border-radius:999px;padding:12px 22px;min-height:44px;background:var(--surface);box-shadow:var(--out-sm);color:var(--danger);font-size:14px;font-weight:800;white-space:nowrap}
 .alert-bar[hidden]{display:none}
-.alert-bar.floating{position:fixed;top:calc(8px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:70;max-width:92vw;box-shadow:0 10px 30px rgba(0,0,0,.25),inset 3px 0 0 var(--danger)}
-.leave-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.alert-bar.floating{position:fixed;top:calc(8px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:70;width:max-content;max-width:94vw;box-shadow:0 10px 30px rgba(0,0,0,.25),inset 3px 0 0 var(--danger)}
+.leave-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
 .notify-toggle{border:0;border-radius:999px;padding:7px 11px;white-space:nowrap;background:var(--surface);box-shadow:var(--out-sm);color:var(--accent);font-size:11px;font-weight:700}
 .notify-toggle[aria-pressed="true"]{box-shadow:var(--in-sm)}
 .leave-walk{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink2)}
@@ -265,6 +265,7 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
           </div>
         </div>
         <button class="notify-toggle" id="notifyBtn" type="button" aria-pressed="false">出門通知：開</button>
+        <button class="notify-toggle" id="countdownBtn" type="button" aria-pressed="false">出門倒數：關</button>
       </div>
       <div class="eta-foot"><span id="etaUpdated">—</span><span class="auto-tag"><i></i>自動更新 · <button class="link-btn" id="calendarBtn" type="button">📅 加入行事曆</button></span></div>
     </section>
@@ -337,7 +338,7 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
 <noscript><p style="text-align:center;padding:24px">請開啟 JavaScript 以查看實時班次及天氣。</p></noscript>
 <script>
 'use strict';
-const VERSION='1.0.2';
+const VERSION='1.0.3';
 /* ===== config ===== */
 const API = {
   routes: 'https://data.etabus.gov.hk/v1/transport/kmb/route/',
@@ -427,7 +428,7 @@ const state = {
   favRoutes:[], favStops:[], recentRoutes:[], scenes:[], activeScene:null,
   theme:'auto', weather:null, hourly:null, weatherLoc:'auto',
   panelOrder:['bus','weather','hourly'],
-  alertOn:false, audioCtx:null, alertAudio:null, alertPool:[], alertIndex:0, audioUnlocked:false, dueSince:0, wakeLock:null, wakeLockWanted:false, notifyEnabled:true, leaveNotifiedTarget:null,
+  alertOn:false, audioCtx:null, alertAudio:null, alertPool:[], alertIndex:0, audioUnlocked:false, dueSince:0, alertSuppressedTarget:null, countdownEnabled:false, wakeLock:null, wakeLockWanted:false, notifyEnabled:true, leaveNotifiedTarget:null,
 };
 let etaToken=0, wxToken=0, hourlyToken=0, toastTimer=null, alertTimer=null;
 function readJSON(k,f){ try { const s=localStorage.getItem(k); return s?JSON.parse(s):f; } catch { return f; } }
@@ -542,6 +543,8 @@ function renderUtilityButtons() {
   const wakeBtn=$('#wakeBtn'), notifyBtn=$('#notifyBtn');
   if (wakeBtn) { const on=!!state.wakeLockWanted; wakeBtn.textContent='保持螢幕：'+(state.wakeLock&&on?'開':'關'); wakeBtn.setAttribute('aria-pressed',String(on)); }
   if (notifyBtn) { const on=!!state.notifyEnabled; const perm=('Notification' in window)?Notification.permission:'unsupported'; let extra=''; if(on&&perm!=='granted') extra='（'+(perm==='denied'?'已封鎖':'未授權')+'）'; notifyBtn.textContent='出門通知：'+(on?'開':'關')+extra; notifyBtn.setAttribute('aria-pressed',String(on)); }
+  const countdownBtn=$('#countdownBtn');
+  if (countdownBtn) { const on=!!state.countdownEnabled; countdownBtn.textContent='出門倒數：'+(on?'開':'關'); countdownBtn.setAttribute('aria-pressed',String(on)); }
 }
 async function requestWakeLock() {
   if (!('wakeLock' in navigator)) { toast('此瀏覽器不支援保持螢幕'); return false; }
@@ -958,6 +961,14 @@ function renderLeave() {
 function tickLeave() {
   const info=leaveInfo(), panel=$('#ridePanel'), count=$('#leaveCountdown'), note=$('#leaveSub');
   if (!panel||!count) return;
+  if (!state.countdownEnabled) {
+    if (state.alertOn) stopLeaveAlert(false);
+    state.dueSince=0;
+    panel.classList.remove('due','soon','near');
+    count.textContent='已關閉';
+    if (note) note.textContent='出門倒數已關閉 · 按「出門倒數：開」啟用';
+    return;
+  }
   if (info.target==null||!Number.isFinite(info.target)) {
     state.dueSince=0;
     panel.classList.remove('due','soon','near'); count.textContent='--:--';
@@ -969,9 +980,10 @@ function tickLeave() {
       panel.classList.toggle('due',armed); panel.classList.toggle('soon',!armed);
       panel.classList.remove('near');
       count.textContent=armed?'出門口！':'準備出發';
-      if (armed) startLeaveAlert();
+      if (state.alertSuppressedTarget!==info.target) startLeaveAlert();
     } else {
       state.dueSince=0;
+      state.alertSuppressedTarget=null;
       panel.classList.remove('due');
       panel.classList.toggle('soon',diff<=60000);
       panel.classList.toggle('near',diff>60000&&diff<=5*60000);
@@ -979,6 +991,14 @@ function tickLeave() {
     }
   }
   if (note) note.textContent=info.sub;
+}
+function toggleCountdown() {
+  state.countdownEnabled=!state.countdownEnabled;
+  state.dueSince=0;
+  state.alertSuppressedTarget=null;
+  if (!state.countdownEnabled) stopLeaveAlert(false);
+  renderUtilityButtons(); renderLeave();
+  toast(state.countdownEnabled?'出門倒數已開啟':'出門倒數已關閉');
 }
 function adjustWalk(delta) {
   const next=clampWalk(state.walkMin+delta); if(next===state.walkMin) return;
@@ -1091,14 +1111,19 @@ function unlockAudio() {
 function beep() { playAlertAudio(); }
 function buzz() { try { if(!navigator.vibrate) return; if(navigator.userActivation && !navigator.userActivation.hasBeenActive) return; navigator.vibrate([400,200,400,200,800]); } catch {} }
 function startLeaveAlert() {
-  if (state.alertOn) return;
+  if (!state.countdownEnabled || state.alertOn) return;
+  state.alertSuppressedTarget=null;
   state.alertOn=true; ensureAudio(); beep(); buzz();
   alertTimer=setInterval(()=>{ beep(); buzz(); },3000);
   renderEta(); tickLeave(); toast('出門提示已開啟 · 按「停止提示」關閉');
 }
-function stopLeaveAlert() {
+function stopLeaveAlert(suppress=true) {
   if (alertTimer) { clearInterval(alertTimer); alertTimer=null; }
   try { if(navigator.vibrate) navigator.vibrate(0); } catch {}
+  if (suppress) {
+    const info=leaveInfo();
+    if (info.target!=null && Number.isFinite(info.target)) state.alertSuppressedTarget=info.target;
+  }
   if (!state.alertOn) return;
   state.alertOn=false; renderEta(); tickLeave(); toast('已停止出門提示');
 }
@@ -1300,6 +1325,7 @@ function bindEvents() {
   $('#walkMinus').addEventListener('click',()=>adjustWalk(-1));
   $('#walkPlus').addEventListener('click',()=>adjustWalk(1));
   $('#calendarBtn').addEventListener('click',addCalendarReminder);
+  $('#countdownBtn').addEventListener('click',toggleCountdown);
   $('#etaArea').addEventListener('click',(e)=>{
     const pick=e.target.closest('[data-eta-pick]');
     if (pick) { state.selectedBus=Number(pick.dataset.etaPick)||0; renderEta(); tickEtas(); tickLeave(); return; }
