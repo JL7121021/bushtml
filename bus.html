@@ -1,0 +1,1280 @@
+<!doctype html>
+<html lang="zh-Hant-HK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>巴士到站 · 香港天氣 · 出門口倒數</title>
+<meta name="description" content="九巴／龍運實時到站、香港天氣及出門口倒數，為 iPhone 而設。">
+<meta name="theme-color" content="#e9eef5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1b2230" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="巴士 · HK">
+<meta name="format-detection" content="telephone=no">
+<meta name="color-scheme" content="light dark">
+<link rel="manifest" id="manifestLink">
+<link rel="apple-touch-icon" id="appleIcon">
+<link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23e2231a'/%3E%3Ctext x='32' y='43' font-size='30' font-family='Arial' font-weight='800' fill='white' text-anchor='middle'%3EB%3C/text%3E%3C/svg%3E">
+<style>
+/* ============ Neumorphism / iPhone first ============ */
+:root {
+  color-scheme: light;
+  --bg:#e9eef5; --surface:#e9eef5;
+  --ink:#2b3648; --ink2:#5f6c80; --ink3:#96a2b4;
+  --sd:rgba(163,177,198,.62); --sl:rgba(255,255,255,.95);
+  --out:8px 8px 18px var(--sd), -8px -8px 18px var(--sl);
+  --out-sm:4px 4px 9px var(--sd), -4px -4px 9px var(--sl);
+  --out-xs:2px 2px 5px var(--sd), -2px -2px 5px var(--sl);
+  --in:inset 5px 5px 10px var(--sd), inset -5px -5px 10px var(--sl);
+  --in-sm:inset 3px 3px 6px var(--sd), inset -3px -3px 6px var(--sl);
+  --accent:#3b6fe0; --amber:#d98a00; --danger:#e5484d;
+  --green:#2ea86b; --blue:#3b82c4; --line:rgba(43,54,72,.09); --radius:28px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme:dark;
+    --bg:#1b2230; --surface:#1b2230; --ink:#e9eef7; --ink2:#a9b4c6; --ink3:#78849a;
+    --sd:rgba(0,0,0,.58); --sl:rgba(255,255,255,.055);
+    --accent:#7ba6ff; --amber:#ffb340; --danger:#ff6b6f; --line:rgba(255,255,255,.08);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme:dark;
+  --bg:#1b2230; --surface:#1b2230; --ink:#e9eef7; --ink2:#a9b4c6; --ink3:#78849a;
+  --sd:rgba(0,0,0,.58); --sl:rgba(255,255,255,.055);
+  --accent:#7ba6ff; --amber:#ffb340; --danger:#ff6b6f; --line:rgba(255,255,255,.08);
+}
+*{-webkit-tap-highlight-color:transparent} html{-webkit-text-size-adjust:100%} [hidden]{display:none!important}
+body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);overflow-x:hidden;transition:background .35s ease;
+ font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang HK","PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+ -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button,input{font-family:inherit} button{cursor:pointer;color:inherit} button:active{transform:scale(.975)}
+.app{max-width:500px;margin:0 auto;box-sizing:border-box;padding:calc(16px + env(safe-area-inset-top)) 16px calc(30px + env(safe-area-inset-bottom))}
+
+/* header */
+.hero{padding:4px 5px 0}.hero-top{display:flex;align-items:center;gap:10px}
+.brand{display:inline-flex;align-items:center;gap:7px;font-size:10.5px;font-weight:750;letter-spacing:.14em;color:var(--ink2)}
+.brand .dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:live 2.2s infinite}
+@keyframes live{60%{box-shadow:0 0 0 6px rgba(46,168,107,0)}100%{box-shadow:0 0 0 0 rgba(46,168,107,0)}}
+.hero-date{font-size:11.5px;color:var(--ink3);margin-left:auto;font-variant-numeric:tabular-nums}
+.theme-btn,.mini-btn{width:34px;height:34px;flex:none;border:0;border-radius:50%;background:var(--surface);box-shadow:var(--out-xs);display:grid;place-items:center;font-size:14px}
+.theme-btn:active,.mini-btn:active{box-shadow:var(--in-sm)}
+.hero-wx{display:flex;align-items:center;gap:9px;margin-top:12px;padding:9px 14px;border-radius:999px;background:var(--surface);box-shadow:var(--out-sm);font-size:13px;max-width:100%}
+.hero-wx-icon{font-size:17px}.hero-wx-rain{font-weight:650}.hero-wx-range{margin-left:auto;color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.a2hs{display:flex;align-items:center;gap:8px;margin-top:10px;padding:9px 12px;border-radius:14px;background:var(--surface);box-shadow:var(--out-sm);font-size:11px;color:var(--ink2);line-height:1.45}
+.a2hs b{color:var(--ink)} .a2hs button{margin-left:auto;flex:none;border:0;border-radius:999px;padding:4px 10px;background:var(--surface);box-shadow:var(--out-xs);color:var(--ink3);font-size:11px}
+.utility-bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.util-btn{flex:1;min-width:140px;border:0;border-radius:12px;padding:9px 12px;background:var(--surface);box-shadow:var(--out-sm);color:var(--ink2);font-size:11px;font-weight:650}
+.util-btn[aria-pressed="true"]{box-shadow:var(--in-sm);color:var(--accent)}
+.util-btn:active{box-shadow:var(--in-sm)}
+/* cards */
+.stack{display:flex;flex-direction:column;gap:18px;margin-top:20px}
+.card{background:var(--surface);border-radius:var(--radius);padding:18px;box-shadow:var(--out)}
+.card-head{display:flex;align-items:center;gap:11px;margin-bottom:13px}
+.card-head h1,.card-head h2{margin:0;font-size:17px;font-weight:700;letter-spacing:-.015em}
+.head-ico{width:32px;height:32px;border-radius:11px;flex:none;display:grid;place-items:center;font-size:15px;background:var(--surface);box-shadow:var(--out-xs)}
+.wx-ico{color:#f5a623}.head-note{margin-left:auto;font-size:11px;color:var(--ink3);font-variant-numeric:tabular-nums}
+.panel-moves{display:inline-flex;gap:6px;margin-left:2px;flex:none}
+.bus .panel-moves{margin-left:auto}
+.panel-move-btn{width:28px;height:28px;border:0;border-radius:9px;background:var(--surface);box-shadow:var(--out-xs);color:var(--ink2);font-size:13px;line-height:1;display:grid;place-items:center}
+.panel-move-btn:active{box-shadow:var(--in-sm)}
+.panel-move-btn:disabled{opacity:.35;box-shadow:none;cursor:default}
+
+/* scenes */
+.scenes{display:flex;gap:7px;overflow-x:auto;margin:-2px 0 14px;padding:2px 0 4px;scrollbar-width:none}
+.scenes::-webkit-scrollbar{display:none}
+.scene{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;border:0;border-radius:999px;padding:7px 12px;background:var(--surface);box-shadow:var(--out-sm);font-size:11.5px;font-weight:650;white-space:nowrap}
+.scene.active{box-shadow:var(--in-sm);color:var(--accent)}
+.scene .del{font-size:12px;color:var(--ink3);padding:0 1px}
+.scene.add{color:var(--ink2)}
+
+/* bus */
+.route-badge{min-width:47px;height:47px;flex:none;padding:0 8px;border:0;border-radius:15px;color:#fff;font-size:15px;font-weight:800;
+ background:linear-gradient(145deg,#ff5b4e,#e2231a 55%,#bb110c);box-shadow:0 9px 18px rgba(226,35,26,.28),var(--out-xs)}
+.route-title{min-width:0;flex:1}.route-title h1{font-size:16.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.route-title p{margin:3px 0 0;font-size:11.5px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icon-btn{width:36px;height:36px;flex:none;border:0;border-radius:50%;background:var(--surface);box-shadow:var(--out-sm);color:var(--ink2);display:grid;place-items:center}
+.icon-btn:active{box-shadow:var(--in-sm)} .icon-btn.loading svg{animation:spin .9s linear infinite} @keyframes spin{to{transform:rotate(360deg)}}
+.service-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 12px}
+.service-tabs button{border:0;border-radius:999px;padding:5px 11px;background:var(--surface);box-shadow:var(--out-xs);font-size:10.5px;font-weight:700;color:var(--ink3)}
+.service-tabs button[aria-pressed="true"]{box-shadow:var(--in-sm);color:var(--accent)}
+.segmented{position:relative;display:grid;grid-template-columns:1fr 1fr;background:var(--surface);box-shadow:var(--in-sm);border-radius:14px;padding:4px;margin-bottom:14px}
+.seg-thumb{position:absolute;top:4px;left:4px;width:calc(50% - 4px);height:calc(100% - 8px);border-radius:11px;background:var(--surface);box-shadow:var(--out-xs);transition:transform .3s cubic-bezier(.32,.72,0,1)}
+.segmented[data-active="I"] .seg-thumb{transform:translateX(100%)}
+.segmented button{position:relative;z-index:1;border:0;background:none;padding:8px 0;font-size:12.5px;font-weight:650;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.segmented button[aria-selected="true"]{color:var(--accent)}
+.stop-row{display:flex;gap:8px;align-items:stretch;margin-bottom:14px}
+.stop-btn{flex:1;min-width:0;display:flex;align-items:center;gap:10px;text-align:left;padding:9px 11px;border:0;border-radius:16px;background:var(--surface);box-shadow:var(--out-sm)}
+.stop-btn:active{box-shadow:var(--in-sm);transform:none}
+.stop-pin{width:30px;height:30px;flex:none;border-radius:50%;display:grid;place-items:center;background:var(--surface);box-shadow:var(--out-xs);color:var(--accent)}
+.stop-text{flex:1;min-width:0}.stop-text small{display:block;font-size:10px;color:var(--ink3);margin-bottom:1px}
+.stop-text strong{display:block;font-size:14px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chev{color:var(--ink3);font-size:21px}.loc-main{width:44px;height:auto;border-radius:14px;font-size:16px}
+
+/* integrated ride panel */
+.eta-area{min-height:92px}
+.ride-panel{border-radius:20px;padding:14px;background:var(--surface);box-shadow:var(--in-sm);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ride-panel.due{box-shadow:var(--in-sm),inset 0 0 0 1px rgba(229,72,77,.42)}
+.ride-main{min-width:0;display:flex;flex-direction:column;gap:3px}
+.ride-cap{font-size:10px;color:var(--ink3)}
+.ride-count{font-size:38px;font-weight:750;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ride-panel.near .ride-count{color:var(--amber)} .ride-panel.soon .ride-count{color:var(--danger)}
+.ride-panel.due .ride-count{font-size:23px;color:var(--danger)}
+.ride-note{font-size:11px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;font-variant-numeric:tabular-nums}
+.ride-side{flex:none;text-align:right;display:flex;flex-direction:column;gap:3px;align-items:flex-end}
+.ride-eta b{font-size:25px;font-weight:750;font-variant-numeric:tabular-nums}
+.ride-eta em{font-style:normal;font-size:10px;color:var(--ink3);margin-left:3px}
+.ride-time{font-size:11px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.tag{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:999px;background:rgba(217,138,0,.14);color:var(--amber)}
+.ride-status{margin:10px 2px 0;font-size:11px;color:var(--ink3);line-height:1.5}
+.link-btn{border:0;background:none;color:var(--accent);font-size:11px;font-weight:700;padding:0 2px;text-decoration:underline}
+.bus-picker{display:flex;gap:6px;margin-top:12px}
+.bus-chip{flex:1;min-width:0;border:0;border-radius:12px;background:var(--surface);box-shadow:var(--out-xs);padding:6px 3px;display:flex;flex-direction:column;align-items:center;gap:1px}
+.bus-chip b{font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.bus-chip small{font-size:8.5px;color:var(--ink3);white-space:nowrap}
+.bus-chip.selected,.bus-chip:active{box-shadow:var(--in-sm);transform:none}.bus-chip.selected b,.bus-chip.selected small{color:var(--accent)}
+.ride-rows{margin-top:11px}.ride-row{display:flex;align-items:center;gap:9px;padding:8px 2px;font-size:12.5px;border-bottom:1px solid var(--line)}
+.ride-row:last-child{border-bottom:0}.ride-row .t{color:var(--ink2);min-width:46px;font-variant-numeric:tabular-nums}
+.ride-row .m{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums}.ride-row .m span{font-size:10px;font-weight:500;color:var(--ink3);margin-left:2px}
+.alert-bar{display:flex;align-items:center;gap:8px;margin-top:12px;padding:10px 12px;border-radius:14px;background:var(--surface);box-shadow:var(--in-sm),inset 3px 0 0 var(--danger);font-size:12px}
+.alert-bar button{margin-left:auto;flex:none;border:0;border-radius:999px;padding:6px 12px;background:var(--surface);box-shadow:var(--out-xs);color:var(--danger);font-size:11px;font-weight:700}
+.leave-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.leave-walk{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink2)}
+.stepper{display:inline-flex;align-items:center;gap:5px;padding:4px;border-radius:12px;background:var(--surface);box-shadow:var(--in-sm);font-variant-numeric:tabular-nums}
+.stepper button{width:25px;height:25px;border:0;border-radius:9px;background:var(--surface);box-shadow:var(--out-xs);font-size:15px;display:grid;place-items:center}
+.stepper button:active{box-shadow:var(--in-sm)} .stepper strong{min-width:12px;text-align:center;font-size:13px}.stepper span{font-size:10px;color:var(--ink3);margin-right:4px}
+.leave-mode-btn{border:0;border-radius:999px;padding:7px 11px;white-space:nowrap;background:var(--surface);box-shadow:var(--out-sm);color:var(--accent);font-size:11px;font-weight:700}
+.leave-custom{margin-top:10px}.time-field>span{display:block;margin-bottom:6px;font-size:11px;color:var(--ink3)}
+.time-field input{width:100%;box-sizing:border-box;padding:11px 13px;border:0;border-radius:13px;background:var(--surface);box-shadow:var(--in-sm);color:var(--ink);font-size:17px;font-weight:650;font-variant-numeric:tabular-nums;outline:none;-webkit-appearance:none}
+.eta-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:10.5px;color:var(--ink3)}
+.auto-tag{display:inline-flex;align-items:center;gap:5px}.auto-tag i{width:5px;height:5px;border-radius:50%;background:var(--green);animation:fade 2.4s infinite}@keyframes fade{50%{opacity:.3}}
+
+/* weather */
+.warning{display:flex;gap:9px;align-items:flex-start;padding:10px 12px;margin-bottom:13px;border-radius:15px;background:var(--surface);box-shadow:var(--in-sm),inset 3px 0 0 var(--amber);font-size:12px;line-height:1.5}
+.warning b{display:block;font-size:12.5px;margin-bottom:1px}.warning p{margin:0;color:var(--ink2)}
+.wx-now{display:flex;align-items:center;gap:12px;margin-bottom:10px}.wx-icon{font-size:38px;line-height:1}
+.wx-now-copy{flex:1;min-width:0}.wx-now-copy strong{display:block;font-size:16px;font-weight:700}.wx-now-copy .loc-link{padding:0;border:0;background:none;color:var(--ink3);font-size:10.5px;text-align:left}
+.wx-cur{font-size:31px;font-weight:700;font-variant-numeric:tabular-nums}.wx-cur sup{font-size:11px;color:var(--ink2);margin-left:2px;vertical-align:12px}
+.wx-range{font-size:25px;font-weight:750;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-bottom:4px}
+.wx-umbrella{font-size:11.5px;color:var(--ink2);margin-bottom:14px;min-height:16px}
+.wx-hours-title{font-size:10.5px;color:var(--ink3);margin:0 0 7px 2px}
+.wx-hours{display:flex;gap:8px;overflow-x:auto;padding:2px 0 5px;margin:0 -2px;scrollbar-width:none}
+.wx-hours::-webkit-scrollbar{display:none}
+.hour{flex:0 0 58px;border-radius:15px;padding:8px 4px;background:var(--surface);box-shadow:var(--out-sm);display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center}
+.hour.now{box-shadow:var(--in-sm)}.hour .ht{font-size:10px;color:var(--ink3);font-variant-numeric:tabular-nums}
+.hour .hi{font-size:19px;line-height:1.15}.hour .hp{font-size:10px;color:var(--blue);font-weight:700;font-variant-numeric:tabular-nums}
+.hour .hc{font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}.hour-empty{font-size:11px;color:var(--ink3);padding:10px 2px}
+
+/* sheets */
+.sheet-backdrop{position:fixed;inset:0;z-index:40;background:rgba(8,12,22,.38);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);opacity:0;transition:opacity .25s}
+.sheet-backdrop.show{opacity:1}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;flex-direction:column;max-height:88dvh;padding-bottom:env(safe-area-inset-bottom);background:var(--surface);border-radius:28px 28px 0 0;box-shadow:0 -14px 40px var(--sd);transform:translateY(101%);transition:transform .36s cubic-bezier(.32,.72,0,1);visibility:hidden}
+.sheet.show{transform:translateY(0);visibility:visible}
+@media(min-width:560px){.sheet{left:50%;right:auto;bottom:18px;width:470px;border-radius:28px;transform:translate(-50%,calc(100% + 30px))}.sheet.show{transform:translate(-50%,0)}}
+.grab{width:38px;height:5px;border-radius:99px;background:var(--ink3);opacity:.35;margin:9px auto 0;flex:none}
+.sheet-head{display:flex;align-items:center;gap:10px;padding:12px 20px 4px;flex:none}.sheet-head h2{margin:0;font-size:17px;font-weight:700}
+.close-btn{margin-left:auto;width:30px;height:30px;border:0;border-radius:50%;background:var(--surface);box-shadow:var(--out-xs);color:var(--ink2);font-size:12px;display:grid;place-items:center}
+.sheet-body{padding:8px 20px 22px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.search-wrap{display:flex;align-items:center;gap:9px;padding:11px 13px;border-radius:14px;background:var(--surface);box-shadow:var(--in-sm);color:var(--ink3)}
+.search-wrap input{flex:1;min-width:0;border:0;background:none;outline:none;font-size:16px;color:var(--ink)}
+.search-wrap input::placeholder{color:var(--ink3)}.search-wrap input::-webkit-search-cancel-button{-webkit-appearance:none}
+.loc-btn{display:flex;align-items:center;gap:8px;width:100%;margin:12px 0 6px;padding:11px 13px;border:0;border-radius:14px;background:var(--surface);box-shadow:var(--out-sm);color:var(--accent);font-size:13px;font-weight:650;text-align:left}
+.loc-btn:disabled{opacity:.6}
+.group-label{font-size:10px;color:var(--ink3);letter-spacing:.06em;margin:12px 2px 4px}
+.pick-item{display:flex;align-items:center;gap:10px;width:100%;padding:10px 8px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);font-size:14px;text-align:left}
+.pick-item:last-child{border-bottom:0}.pick-item[aria-selected="true"]{color:var(--accent);font-weight:650;border-radius:12px;box-shadow:var(--in-sm);border-bottom-color:transparent}
+.pick-item .seq,.pick-item .rnum{min-width:38px;font-size:11px;color:var(--ink3);text-align:right;font-variant-numeric:tabular-nums}
+.pick-item .rnum{font-size:14px;font-weight:800;color:var(--ink)}.pick-item .nm,.pick-item .ptext{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pick-item .ptext small{display:block;font-size:10px;color:var(--ink3);font-weight:400;margin-top:2px}
+.pick-item .dist{font-size:10px;color:var(--ink3);font-variant-numeric:tabular-nums}.pick-item .tick{font-size:13px;color:var(--accent)}
+.star-btn{width:28px;height:28px;flex:none;border:0;border-radius:50%;background:var(--surface);box-shadow:var(--out-xs);font-size:13px;line-height:1}
+.star-btn.on{color:var(--amber);box-shadow:var(--in-sm)}
+.district-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:8px}
+.district-grid button{border:0;border-radius:13px;padding:10px 4px;background:var(--surface);box-shadow:var(--out-xs);font-size:12px;font-weight:650;color:var(--ink2)}
+.district-grid button[aria-pressed="true"]{box-shadow:var(--in-sm);color:var(--accent)}
+.list-empty{padding:22px 0;text-align:center;color:var(--ink3);font-size:13px}
+
+/* misc */
+.toast{position:fixed;left:50%;bottom:calc(26px + env(safe-area-inset-bottom));z-index:60;max-width:84vw;padding:10px 16px;border-radius:999px;background:rgba(20,25,35,.94);color:#fff;font-size:12.5px;text-align:center;opacity:0;transform:translate(-50%,14px);pointer-events:none;transition:.25s;backdrop-filter:blur(10px)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.foot{margin-top:22px;text-align:center;font-size:10px;line-height:1.8;color:var(--ink3)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+@media(max-width:380px){.ride-count{font-size:33px}.ride-eta b{font-size:21px}.ride-panel{padding:12px}.card{padding:16px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="hero">
+    <div class="hero-top">
+      <span class="brand"><span class="dot"></span>HONG KONG</span>
+      <span class="hero-date" id="heroDate">—</span>
+      <button class="theme-btn" id="themeBtn" type="button" aria-label="切換主題" title="切換主題">◐</button>
+    </div>
+    <div class="hero-wx">
+      <span class="hero-wx-icon" id="heroWxIcon">🌤️</span>
+      <span class="hero-wx-rain" id="heroWxRain">天氣載入中…</span>
+      <span class="hero-wx-range" id="heroWxRange">--° / --°</span>
+    </div>
+    <div class="utility-bar" aria-label="背景與通知">
+      <button class="util-btn" id="wakeBtn" type="button" aria-pressed="false">保持螢幕：關</button>
+      <button class="util-btn" id="notifyBtn" type="button" aria-pressed="false">出門通知：關</button>
+      <button class="util-btn" id="soundTestBtn" type="button">🔊 測試提示音</button>
+    </div>
+    <div class="a2hs" id="a2hsTip" hidden>
+      <span>📲 <b>加入主畫面</b>：Safari 分享 → 加入主畫面</span>
+      <button type="button" id="a2hsClose">知道了</button>
+    </div>
+  </header>
+
+  <main class="stack">
+    <section class="card bus" id="panelBus" data-panel="bus" aria-labelledby="busTitle">
+      <div class="scenes" id="sceneBar" aria-label="場景快切"></div>
+      <div class="card-head">
+        <button class="route-badge" id="routeBtn" type="button" aria-haspopup="dialog" aria-label="選擇路線">1</button>
+        <div class="route-title">
+          <h1 id="busTitle">載入路線中…</h1>
+          <p id="busSub">九巴／龍運</p>
+        </div>
+        <div class="panel-moves" aria-label="排列巴士到站">
+          <button class="panel-move-btn" type="button" data-move-panel="bus" data-dir="up" aria-label="將巴士到站上移">↑</button>
+          <button class="panel-move-btn" type="button" data-move-panel="bus" data-dir="down" aria-label="將巴士到站下移">↓</button>
+        </div>
+        <button class="icon-btn" id="refreshBtn" type="button" aria-label="重新整理班次">
+          <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.34 6.34M20 4v7h-7" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <div class="service-tabs" id="serviceTabs" hidden></div>
+      <div class="segmented" id="dirTabs" role="tablist" aria-label="行車方向" data-active="O">
+        <span class="seg-thumb" aria-hidden="true"></span>
+        <button type="button" role="tab" data-bound="O" aria-selected="true">往終點</button>
+        <button type="button" role="tab" data-bound="I" aria-selected="false">往起點</button>
+      </div>
+      <div class="stop-row">
+        <button class="stop-btn" id="stopBtn" type="button" aria-haspopup="dialog">
+          <span class="stop-pin" aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17"><path d="M12 21s7-6.1 7-11a7 7 0 1 0-14 0c0 4.9 7 11 7 11Z" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="12" cy="10" r="2.6" fill="currentColor"/></svg></span>
+          <span class="stop-text"><small>目前車站</small><strong id="stopName">—</strong></span>
+          <span class="chev" aria-hidden="true">›</span>
+        </button>
+        <button class="icon-btn loc-main" id="locMainBtn" type="button" aria-label="用位置尋找最近車站" title="用位置尋找最近車站">📍</button>
+      </div>
+      <div id="etaArea" class="eta-area" aria-live="polite"></div>
+      <div class="leave-bar">
+        <div class="leave-walk" id="leaveWalk">
+          <span>預留步行時間</span>
+          <div class="stepper">
+            <button type="button" id="walkMinus" aria-label="減少一分鐘">−</button>
+            <strong id="walkValue">5</strong><span>分鐘</span>
+            <button type="button" id="walkPlus" aria-label="增加一分鐘">＋</button>
+          </div>
+        </div>
+        <button class="leave-mode-btn" id="leaveModeBtn" type="button">自訂時間</button>
+      </div>
+      <div class="leave-custom" id="leaveCustomPanel" hidden>
+        <label class="time-field"><span>每日出門口時間（香港時間）</span>
+          <input id="leaveTimeInput" type="time" min="00:00" max="23:59" aria-label="每日出門口時間">
+        </label>
+      </div>
+      <div class="eta-foot"><span id="etaUpdated">—</span><span class="auto-tag"><i></i>自動更新</span></div>
+    </section>
+
+    <section class="card wx" id="panelWeather" data-panel="weather" aria-labelledby="wxTitle">
+      <div class="card-head">
+        <div class="head-ico wx-ico" aria-hidden="true">☀️</div>
+        <h2 id="wxTitle">香港天氣</h2>
+        <span class="head-note" id="wxUpdated">—</span>
+        <div class="panel-moves" aria-label="排列香港天氣">
+          <button class="panel-move-btn" type="button" data-move-panel="weather" data-dir="up" aria-label="將香港天氣上移">↑</button>
+          <button class="panel-move-btn" type="button" data-move-panel="weather" data-dir="down" aria-label="將香港天氣下移">↓</button>
+        </div>
+      </div>
+      <div id="warningBanner" class="warning" hidden></div>
+      <div class="wx-now">
+        <div class="wx-icon" id="wxIcon" aria-hidden="true">🌤️</div>
+        <div class="wx-now-copy"><strong id="wxRain">—</strong><button class="loc-link" id="wxLoc" type="button" aria-haspopup="dialog">📍 香港天文台 · 更改</button></div>
+        <div class="wx-cur"><span id="wxTemp">--</span><sup>°C</sup></div>
+      </div>
+      <div class="wx-range" id="wxRange">--° / --°</div>
+      <div class="wx-umbrella" id="wxUmbrella">—</div>
+    </section>
+
+    <section class="card wx-hourly-card" id="panelHourly" data-panel="hourly" aria-labelledby="wxHourlyTitle">
+      <div class="card-head">
+        <div class="head-ico wx-ico" aria-hidden="true">🕒</div>
+        <h2 id="wxHourlyTitle">未來 24 小時</h2>
+        <span class="head-note" id="wxHourlyNote">每 3 小時</span>
+        <div class="panel-moves" aria-label="排列未來 24 小時">
+          <button class="panel-move-btn" type="button" data-move-panel="hourly" data-dir="up" aria-label="將未來 24 小時上移">↑</button>
+          <button class="panel-move-btn" type="button" data-move-panel="hourly" data-dir="down" aria-label="將未來 24 小時下移">↓</button>
+        </div>
+      </div>
+      <div class="wx-hours-title">氣溫 / 下雨機會</div>
+      <div class="wx-hours" id="wxHours"></div>
+    </section>
+  </main>
+  <footer class="foot">資料來源：九巴／龍運開放數據 · 香港天文台 · Open-Meteo<br>班次及天氣資料僅供參考</footer>
+</div>
+
+<div class="sheet-backdrop" id="sheetBackdrop" hidden></div>
+<section class="sheet" id="routeSheet" role="dialog" aria-modal="true" aria-labelledby="routeSheetTitle" hidden>
+  <div class="grab" aria-hidden="true"></div>
+  <div class="sheet-head"><h2 id="routeSheetTitle">選擇路線</h2><button class="close-btn" type="button" data-close-sheet aria-label="關閉">✕</button></div>
+  <div class="sheet-body">
+    <div class="search-wrap"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="m16 16 4 4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+      <input id="routeSearch" type="search" placeholder="搜尋路線或目的地" autocomplete="off" enterkeyhint="search"></div>
+    <div id="routeFavs"></div>
+    <div class="stop-list" id="routeList" role="listbox" aria-label="巴士路線"></div>
+  </div>
+</section>
+<section class="sheet" id="stopSheet" role="dialog" aria-modal="true" aria-labelledby="stopSheetTitle" hidden>
+  <div class="grab" aria-hidden="true"></div>
+  <div class="sheet-head"><h2 id="stopSheetTitle">選擇車站</h2><button class="close-btn" type="button" data-close-sheet aria-label="關閉">✕</button></div>
+  <div class="sheet-body">
+    <div class="search-wrap"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="m16 16 4 4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+      <input id="stopSearch" type="search" placeholder="搜尋車站" autocomplete="off" enterkeyhint="search"></div>
+    <button class="loc-btn" id="locBtn" type="button"><span aria-hidden="true">📍</span><span id="locLabel">用我的位置分開車站</span></button>
+    <div id="stopFavs"></div>
+    <div class="stop-list" id="stopList" role="listbox" aria-label="車站"></div>
+  </div>
+</section>
+<section class="sheet" id="weatherSheet" role="dialog" aria-modal="true" aria-labelledby="weatherSheetTitle" hidden>
+  <div class="grab" aria-hidden="true"></div>
+  <div class="sheet-head"><h2 id="weatherSheetTitle">天氣地點</h2><button class="close-btn" type="button" data-close-sheet aria-label="關閉">✕</button></div>
+  <div class="sheet-body"><div class="group-label">選擇逐 3 小時天氣所在地區</div><div class="district-grid" id="districtGrid"></div></div>
+</section>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<noscript><p style="text-align:center;padding:24px">請開啟 JavaScript 以查看實時班次及天氣。</p></noscript>
+<script>
+'use strict';
+/* ===== config ===== */
+const API = {
+  routes: 'https://data.etabus.gov.hk/v1/transport/kmb/route/',
+  stops: 'https://data.etabus.gov.hk/v1/transport/kmb/stop',
+  stop: (id) => `https://data.etabus.gov.hk/v1/transport/kmb/stop/${id}`,
+  routeStop: (r, b, s) => `https://data.etabus.gov.hk/v1/transport/kmb/route-stop/${r}/${b==='I'?'inbound':'outbound'}/${s}`,
+  eta: (id) => `https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${id}`,
+  wx: (t) => `https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=${t}&lang=tc`,
+  hourly: (lat, lng) => `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,weather_code&hourly=temperature_2m,precipitation_probability,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code&timezone=Asia%2FHong_Kong&forecast_days=2`,
+};
+const KEYS = {
+  current:'hkbus.v2.current', routes:'hkbus.v2.routes', stopMap:'hkbus.v2.stopmap',
+  routePrefs:'hkbus.v2.routePrefs', stopByKey:'hkbus.v2.stopByKey',
+  walk:'hkbus.v2.walk', leaveMode:'hkbus.v2.leaveMode', leaveTime:'hkbus.v2.leaveTime',
+  pos:'hkbus.v2.pos', weather:'hkbus.v2.weather', hourly:'hkbus.v2.hourly', weatherLoc:'hkbus.v2.weatherLoc',
+  panelOrder:'hkbus.v2.panelOrder',
+  theme:'hkbus.v2.theme', a2hs:'hkbus.v2.a2hs',
+  notify:'hkbus.v2.notify', wake:'hkbus.v2.wake',
+  favRoutes:'hkbus.v2.favRoutes', favStops:'hkbus.v2.favStops', recentRoutes:'hkbus.v2.recentRoutes',
+  scenes:'hkbus.v2.scenes', activeScene:'hkbus.v2.activeScene', alert:'hkbus.v2.alert', etaCache:'hkbus.v2.etaCache',
+};
+const HK_TZ = 'Asia/Hong_Kong', HK_DEFAULT = { lat:22.3027, lng:114.1772 };
+const REFRESH_ETA_MS = 20000, REFRESH_WX_MS = 10*60*1000, DAY_MS = 86400000;
+const DISTRICTS = [
+  { n:'中西區', lat:22.282, lng:114.145 }, { n:'灣仔', lat:22.277, lng:114.170 },
+  { n:'東區', lat:22.286, lng:114.218 }, { n:'南區', lat:22.247, lng:114.160 },
+  { n:'油尖旺', lat:22.307, lng:114.171 }, { n:'深水埗', lat:22.330, lng:114.160 },
+  { n:'九龍城', lat:22.320, lng:114.185 }, { n:'黃大仙', lat:22.340, lng:114.200 },
+  { n:'觀塘', lat:22.320, lng:114.225 }, { n:'葵青', lat:22.350, lng:114.135 },
+  { n:'荃灣', lat:22.370, lng:114.120 }, { n:'屯門', lat:22.390, lng:114.000 },
+  { n:'元朗', lat:22.440, lng:114.030 }, { n:'北區', lat:22.490, lng:114.140 },
+  { n:'大埔', lat:22.450, lng:114.165 }, { n:'沙田', lat:22.400, lng:114.190 },
+  { n:'西貢', lat:22.380, lng:114.270 }, { n:'離島區', lat:22.260, lng:114.000 },
+];
+const WARN_NAMES = { WTS:'雷暴警告',WRAIN:'暴雨警告',WFIRE:'火災危險警告',WCOLD:'寒冷天氣警告',WHOT:'酷熱天氣警告',WFG:'山泥傾瀉警告',WTCSGNL:'熱帶氣旋警告',WMSGNL:'強烈季候風信號',WTMW:'海嘯警告',WFROST:'霜凍警告' };
+
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const pad2 = (n) => String(n).padStart(2,'0');
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const dateFmt = new Intl.DateTimeFormat('zh-HK',{timeZone:HK_TZ,month:'long',day:'numeric',weekday:'long'});
+const hmFmt = new Intl.DateTimeFormat('zh-HK',{timeZone:HK_TZ,hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+const hmsFmt = new Intl.DateTimeFormat('zh-HK',{timeZone:HK_TZ,hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
+const timeOf = (ts) => hmFmt.format(new Date(ts));
+const timeWithSec = (ts) => hmsFmt.format(new Date(ts));
+function hkParts(date = new Date()) {
+  const o = {};
+  for (const p of new Intl.DateTimeFormat('en-GB',{timeZone:HK_TZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(date)) if (p.type!=='literal') o[p.type]=p.value;
+  return o;
+}
+function hkLocalISO() { const p=hkParts(); return `${p.year}-${p.month}-${p.day}T${p.hour}:00`; }
+function wxEmoji(code) {
+  const c=Number(code);
+  if (c>=90&&c<=91) return c===90?'🥵':'🥶';
+  if (c===92) return '❄️'; if (c>=83) return '🌫️'; if (c===80) return '💨';
+  if (c>=63&&c<=65) return '⛈️'; if (c===62) return '🌧️';
+  if (c>=60&&c<=61) return '🌦️'; if (c===54) return '☁️';
+  if (c===52||c===53) return '⛅️'; if (c===50||c===51) return '☀️';
+  return '🌤️';
+}
+function wxCodeEmoji(code) {
+  const c=Number(code);
+  if (c===0) return '☀️'; if (c<=2) return '🌤️'; if (c===3) return '☁️';
+  if (c===45||c===48) return '🌫️'; if (c>=51&&c<=57) return '🌦️';
+  if (c>=61&&c<=67) return '🌧️'; if (c>=71&&c<=77) return '🌨️';
+  if (c>=80&&c<=82) return '🌦️'; if (c===85||c===86) return '🌨️';
+  if (c>=95) return '⛈️'; return '🌤️';
+}
+function haversine(a,b) {
+  const R=6371000, rad=d=>d*Math.PI/180, dLat=rad(b.lat-a.lat), dLon=rad(b.lng-a.lng);
+  const h=Math.sin(dLat/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+function fmtDistance(m) { return m<1000 ? `${Math.round(m/10)*10} 米` : `${(m/1000).toFixed(1)} 公里`; }
+function nearestDistrict(pos) {
+  if (!pos) return null;
+  return DISTRICTS.map(d=>({d,dist:haversine(pos,d)})).sort((a,b)=>a.dist-b.dist)[0].d.n;
+}
+
+/* ===== state ===== */
+const state = {
+  route:'1', bound:'O', serviceType:'1',
+  routeList:[], routeAt:0, stopMap:{}, stopMapReady:false,
+  stops:[], stopId:null, stopByKey:{}, routePrefs:{}, stopsError:null,
+  etas:[], etaFetchedAt:0, etaLoading:false, etaError:null, selectedBus:0,
+  userPos:null, walkMin:5, leaveMode:'bus', leaveTime:'08:00',
+  favRoutes:[], favStops:[], recentRoutes:[], scenes:[], activeScene:null,
+  theme:'auto', weather:null, hourly:null, weatherLoc:'auto',
+  panelOrder:['bus','weather','hourly'],
+  alertOn:false, audioCtx:null, wakeLock:null, wakeLockWanted:false, notifyEnabled:false, leaveNotifiedTarget:null,
+};
+let etaToken=0, wxToken=0, hourlyToken=0, toastTimer=null, alertTimer=null;
+function readJSON(k,f){ try { const s=localStorage.getItem(k); return s?JSON.parse(s):f; } catch { return f; } }
+function writeJSON(k,v){ try { localStorage.setItem(k,JSON.stringify(v)); } catch {} }
+function saveCurrent() { writeJSON(KEYS.current,{route:state.route,bound:state.bound,serviceType:state.serviceType}); }
+function routeKey() { return `${state.route}|${state.bound}|${state.serviceType}`; }
+
+/* ===== prefs / migration ===== */
+const PANEL_IDS=['bus','weather','hourly'];
+function normalizePanelOrder(order) {
+  const base=Array.isArray(order)?order.filter(id=>PANEL_IDS.includes(id)):[];
+  const out=[];
+  for (const id of base) if (!out.includes(id)) out.push(id);
+  for (const id of PANEL_IDS) if (!out.includes(id)) out.push(id);
+  return out;
+}
+function applyPanelOrder(order=state.panelOrder, persist=false) {
+  state.panelOrder=normalizePanelOrder(order);
+  const stack=$('.stack'); if (!stack) return;
+  for (const id of state.panelOrder) {
+    const el=document.querySelector(`[data-panel="${id}"]`);
+    if (el) stack.appendChild(el);
+  }
+  $$('.panel-move-btn').forEach(btn=>{
+    const id=btn.dataset.movePanel, dir=btn.dataset.dir;
+    const idx=state.panelOrder.indexOf(id);
+    btn.disabled=(dir==='up'&&idx<=0) || (dir==='down'&&idx===state.panelOrder.length-1);
+  });
+  if (persist) writeJSON(KEYS.panelOrder,state.panelOrder);
+}
+function movePanel(id,dir) {
+  const order=state.panelOrder.slice();
+  const i=order.indexOf(id); if (i<0) return;
+  const j=dir==='up'?i-1:i+1;
+  if (j<0||j>=order.length) return;
+  [order[i],order[j]]=[order[j],order[i]];
+  applyPanelOrder(order,true);
+  const name=id==='bus'?'巴士到站':id==='weather'?'香港天氣':'未來 24 小時';
+  toast(`${name}已${dir==='up'?'上移':'下移'}`);
+}
+function purgeLegacyPrefs() {
+  try {
+    Object.keys(localStorage).filter(k=>/^hk\d+\./.test(k)).forEach(k=>localStorage.removeItem(k));
+  } catch {}
+}
+function loadPrefs() {
+  const cur=readJSON(KEYS.current,null);
+  if (cur && typeof cur.route==='string') {
+    state.route=cur.route; state.bound=cur.bound==='I'?'I':'O'; state.serviceType=String(cur.serviceType||'1');
+  } else {
+    state.route='1'; state.bound='O'; saveCurrent();
+  }
+  state.routePrefs=readJSON(KEYS.routePrefs,{}) || {};
+  state.stopByKey=readJSON(KEYS.stopByKey,{}) || state.stopByKey;
+  const walk=readJSON(KEYS.walk,null); if (Number.isFinite(walk)) state.walkMin=clampWalk(walk);
+  state.leaveMode=localStorage.getItem(KEYS.leaveMode)||'bus';
+  if (state.leaveMode!=='bus'&&state.leaveMode!=='custom') state.leaveMode='bus';
+  state.leaveTime=readJSON(KEYS.leaveTime,null)||'08:00';
+  if (!isValidHHMM(state.leaveTime)) state.leaveTime='08:00';
+  state.pos=readJSON(KEYS.pos,null);
+  if (state.pos && Number.isFinite(state.pos.lat) && Number.isFinite(state.pos.lng)) state.userPos=state.pos;
+  const wl=readJSON(KEYS.weatherLoc,'auto');
+  state.weatherLoc=(wl==='auto'||DISTRICTS.some(d=>d.n===wl))?wl:'auto';
+  state.favRoutes=readJSON(KEYS.favRoutes,[])||[]; state.favStops=readJSON(KEYS.favStops,[])||[];
+  state.recentRoutes=readJSON(KEYS.recentRoutes,[])||[];
+  state.theme=localStorage.getItem(KEYS.theme)||'auto';
+  if (!['auto','light','dark'].includes(state.theme)) state.theme='auto';
+  const po=readJSON(KEYS.panelOrder,null);
+  state.panelOrder=normalizePanelOrder(po);
+  state.notifyEnabled=readJSON(KEYS.notify,false)===true;
+  state.wakeLockWanted=readJSON(KEYS.wake,false)===true;
+  state.scenes=readJSON(KEYS.scenes,null);
+  if (!Array.isArray(state.scenes) || !state.scenes.length) {
+    state.scenes=[];
+    writeJSON(KEYS.scenes,state.scenes);
+  }
+  state.activeScene=localStorage.getItem(KEYS.activeScene)||null;
+}
+function ensureValidRoute() {
+  if (!state.routeList.length) return;
+  if (!state.routeList.some(r=>r.route===state.route)) {
+    state.route=state.routeList.some(r=>r.route==='1')?'1':state.routeList[0].route;
+    const opts=state.routeList.filter(r=>r.route===state.route);
+    state.bound=opts[0].bound; state.serviceType=String(opts[0].service_type||'1'); saveCurrent();
+  }
+  const opts=state.routeList.filter(r=>r.route===state.route);
+  if (!opts.some(r=>r.bound===state.bound&&String(r.service_type)===state.serviceType)) {
+    state.bound=opts[0].bound; state.serviceType=String(opts[0].service_type||'1'); saveCurrent();
+  }
+}
+
+/* ===== icons / theme / a2hs ===== */
+function installIcons() {
+  const svg="<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='112' fill='#e2231a'/><rect x='118' y='92' width='276' height='320' rx='58' fill='#fff'/><rect x='146' y='126' width='220' height='188' rx='30' fill='#e2231a'/><circle cx='180' cy='352' r='30' fill='#2b3648'/><circle cx='332' cy='352' r='30' fill='#2b3648'/><path d='M168 214h176' stroke='#fff' stroke-width='18' stroke-linecap='round'/></svg>";
+  const uri='data:image/svg+xml,'+encodeURIComponent(svg);
+  $('#favicon').href=uri;
+  const manifest={name:'巴士到站 · 香港天氣 · 出門口倒數',short_name:'巴士 · HK',start_url:'.',scope:'.',display:'standalone',orientation:'portrait',background_color:'#e9eef5',theme_color:'#e9eef5',description:'九巴／龍運到站、天氣同出門口倒數。',icons:[{src:uri,sizes:'any',type:'image/svg+xml',purpose:'any maskable'}]};
+  $('#manifestLink').href='data:application/manifest+json,'+encodeURIComponent(JSON.stringify(manifest));
+  try {
+    const c=document.createElement('canvas'); c.width=c.height=180; const g=c.getContext('2d');
+    const grad=g.createLinearGradient(0,0,180,180); grad.addColorStop(0,'#ff5b4e'); grad.addColorStop(1,'#bb110c'); g.fillStyle=grad;
+    g.beginPath(); if(g.roundRect) g.roundRect(0,0,180,180,40); else g.rect(0,0,180,180); g.fill();
+    g.fillStyle='#fff'; g.font='800 70px -apple-system,Arial,sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('BUS',90,94);
+    $('#appleIcon').href=c.toDataURL('image/png');
+  } catch {}
+}
+function applyTheme(t) {
+  state.theme=t;
+  if (t==='auto') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme',t);
+  const b=$('#themeBtn'); if (b) b.textContent=t==='light'?'☀️':t==='dark'?'🌙':'◐';
+  try { localStorage.setItem(KEYS.theme,t); } catch {}
+}
+
+function renderUtilityButtons() {
+  const wakeBtn=$('#wakeBtn'), notifyBtn=$('#notifyBtn');
+  if (wakeBtn) { const on=!!state.wakeLockWanted; wakeBtn.textContent='保持螢幕：'+(state.wakeLock&&on?'開':'關'); wakeBtn.setAttribute('aria-pressed',String(on)); }
+  if (notifyBtn) { const on=!!state.notifyEnabled; const perm=('Notification' in window)?Notification.permission:'unsupported'; let extra=''; if(on&&perm!=='granted') extra='（'+(perm==='denied'?'已封鎖':'未授權')+'）'; notifyBtn.textContent='出門通知：'+(on?'開':'關')+extra; notifyBtn.setAttribute('aria-pressed',String(on)); }
+}
+async function requestWakeLock() {
+  if (!('wakeLock' in navigator)) { toast('此瀏覽器不支援保持螢幕'); return false; }
+  try {
+    state.wakeLock=await navigator.wakeLock.request('screen');
+    state.wakeLock.addEventListener('release',()=>{ state.wakeLock=null; renderUtilityButtons(); });
+    renderUtilityButtons();
+    return true;
+  } catch { state.wakeLock=null; renderUtilityButtons(); toast('無法保持螢幕，請保持頁面在前景'); return false; }
+}
+async function releaseWakeLock() {
+  try { await state.wakeLock?.release(); } catch {}
+  state.wakeLock=null; renderUtilityButtons();
+}
+async function toggleWakeLock() {
+  state.wakeLockWanted=!state.wakeLockWanted;
+  writeJSON(KEYS.wake,state.wakeLockWanted);
+  if (state.wakeLockWanted) { const ok=await requestWakeLock(); if(!ok){ state.wakeLockWanted=false; writeJSON(KEYS.wake,false);} }
+  else await releaseWakeLock();
+  renderUtilityButtons();
+  toast(state.wakeLockWanted?'已嘗試保持螢幕常亮':'已關閉保持螢幕');
+}
+async function sendLeaveNotification(title, body) {
+  if (!state.notifyEnabled || !('Notification' in window) || Notification.permission!=='granted') return;
+  try {
+    const reg=await navigator.serviceWorker?.getRegistration?.();
+    if (reg?.showNotification) { await reg.showNotification(title,{body,icon:$('#favicon')?.href,tag:'hkbus-leave',renotify:true}); return; }
+  } catch {}
+  try { new Notification(title,{body,icon:$('#favicon')?.href,tag:'hkbus-leave',renotify:true}); } catch {}
+}
+async function toggleNotify() {
+  if (!('Notification' in window)) { toast('此瀏覽器不支援通知'); return; }
+  if (state.notifyEnabled) {
+    state.notifyEnabled=false; writeJSON(KEYS.notify,false); renderUtilityButtons(); toast('已關閉出門通知'); return;
+  }
+  let perm=Notification.permission;
+  if (perm==='default') { try { perm=await Notification.requestPermission(); } catch { perm='denied'; } }
+  if (perm!=='granted') { state.notifyEnabled=false; writeJSON(KEYS.notify,false); renderUtilityButtons(); toast(perm==='denied'?'通知權限已被封鎖':'未授權通知'); return; }
+  state.notifyEnabled=true; writeJSON(KEYS.notify,true); renderUtilityButtons(); toast('出門通知已開啟');
+}function cycleTheme() { applyTheme(state.theme==='auto'?'light':state.theme==='light'?'dark':'auto'); }
+function checkA2HS() {
+  const standalone = navigator.standalone===true || matchMedia('(display-mode: standalone)').matches;
+  $('#a2hsTip').hidden = standalone || readJSON(KEYS.a2hs,false)===true;
+}
+function closeA2HS() { $('#a2hsTip').hidden=true; writeJSON(KEYS.a2hs,true); }
+
+/* ===== scenes / favourites ===== */
+function renderScenes() {
+  const bar=$('#sceneBar');
+  const chips=state.scenes.map(s=>{
+    const active=s.id===state.activeScene;
+    const del=(active&&String(s.id).startsWith('s'))?`<span class="del" data-del-scene="${esc(s.id)}" role="button" aria-label="刪除場景">✕</span>`:'';
+    return `<button class="scene${active?' active':''}" type="button" data-scene="${esc(s.id)}"> ${esc(s.name)} ${del}</button>`;
+  }).join('');
+  bar.innerHTML=chips+`<button class="scene add" type="button" data-add-scene>＋ 儲存現況</button>`;
+}
+function applyScene(id) {
+  const s=state.scenes.find(x=>x.id===id); if(!s) return;
+  state.route=s.route; state.bound=s.bound==='I'?'I':'O'; state.serviceType=String(s.serviceType||'1');
+  state.walkMin=clampWalk(s.walkMin); state.leaveMode=s.leaveMode==='custom'?'custom':'bus';
+  state.leaveTime=isValidHHMM(s.leaveTime)?s.leaveTime:'08:00';
+  if (s.stopId) state.stopByKey[`${state.route}|${state.bound}|${state.serviceType}`]=s.stopId;
+  state.activeScene=id;
+  saveCurrent(); writeJSON(KEYS.stopByKey,state.stopByKey); writeJSON(KEYS.walk,state.walkMin);
+  writeJSON(KEYS.leaveMode,state.leaveMode); writeJSON(KEYS.leaveTime,state.leaveTime);
+  try{localStorage.setItem(KEYS.activeScene,id)}catch{}
+  state.stops=[]; state.etas=[]; state.selectedBus=0; state.etaError=null;
+  renderScenes(); renderBus(); renderLeave();
+  loadStops().then(()=>refreshEta()); loadHourly();
+}
+function saveCurrentScene() {
+  const suggested=`${state.route} ${state.bound==='O'?'去程':'回程'}`;
+  let name;
+    try { name=prompt('場景名稱（例如：返工 / 放學）',suggested); } catch { name=suggested; }
+  name=String(name).trim()||suggested;
+  const s={id:'s'+Date.now(),name,route:state.route,bound:state.bound,serviceType:state.serviceType,stopId:state.stopId,walkMin:state.walkMin,leaveMode:state.leaveMode,leaveTime:state.leaveTime};
+  state.scenes.push(s); state.activeScene=s.id;
+  writeJSON(KEYS.scenes,state.scenes); try{localStorage.setItem(KEYS.activeScene,s.id)}catch{}
+  renderScenes(); toast(`已儲存場景「${name}」`);
+}
+function deleteScene(id) {
+  const s=state.scenes.find(x=>x.id===id); if(!s) return;
+  if (!confirm(`刪除場景「${s.name}」？`)) return;
+  state.scenes=state.scenes.filter(x=>x.id!==id);
+  if (state.activeScene===id) state.activeScene=null;
+  writeJSON(KEYS.scenes,state.scenes); try{localStorage.removeItem(KEYS.activeScene)}catch{}
+  renderScenes();
+}
+function toggleFav(kind,id) {
+  const key=kind==='route'?KEYS.favRoutes:KEYS.favStops;
+  const arr=state[kind==='route'?'favRoutes':'favStops'];
+  const i=arr.indexOf(id);
+  if (i>=0) arr.splice(i,1); else arr.unshift(id);
+  writeJSON(key,arr);
+  return i<0;
+}
+const isFavRoute=(r)=>state.favRoutes.includes(r);
+const isFavStop=(id)=>state.favStops.includes(id);
+
+/* ===== boot ===== */
+async function bootstrap() {
+  installIcons(); purgeLegacyPrefs(); loadPrefs(); applyTheme(state.theme); applyPanelOrder(state.panelOrder); checkA2HS();
+  bindEvents(); updateDateLabels(); renderScenes(); renderBus(); renderLeave(); renderUtilityButtons();
+  await Promise.allSettled([loadRouteList(),loadStopMap(),loadWeather()]);
+  ensureValidRoute(); renderBus();
+  await loadStops();
+  refreshEta(); loadHourly();
+  setInterval(tick,1000);
+  setInterval(updateDateLabels,60000);
+  setInterval(()=>{ if(!document.hidden) refreshEta(); },REFRESH_ETA_MS);
+  setInterval(()=>{ if(!document.hidden) loadWeather(); },REFRESH_WX_MS);
+  setInterval(()=>{ if(!document.hidden) loadHourly(); },30*60*1000);
+  document.addEventListener('visibilitychange',()=>{
+    if (document.hidden) return;
+    if (state.wakeLockWanted && !state.wakeLock) requestWakeLock();
+    if (Date.now()-state.etaFetchedAt>15000) refreshEta();
+    if (!state.weather || Date.now()-(state.weather.at||0)>5*60*1000) loadWeather();
+    if (!state.hourly || Date.now()-(state.hourly.at||0)>20*60*1000) loadHourly();
+  });
+}
+document.addEventListener('DOMContentLoaded',bootstrap);
+/* ===== route / stop data ===== */
+function routeOptions(route=state.route) { return state.routeList.filter(r=>r.route===route); }
+function getRouteInfo() {
+  const opts=routeOptions();
+  return opts.find(r=>r.bound===state.bound&&String(r.service_type)===state.serviceType)
+    || opts.find(r=>r.bound===state.bound)
+    || opts[0]
+    || {route:state.route,bound:state.bound,service_type:state.serviceType,orig_tc:'',dest_tc:''};
+}
+function currentStop() { return state.stops.find(s=>s.id===state.stopId)||null; }
+async function loadRouteList() {
+  const cached=readJSON(KEYS.routes,null);
+  if (cached && cached.at && Date.now()-cached.at<DAY_MS && Array.isArray(cached.data) && cached.data.length) {
+    state.routeList=cached.data; state.routeAt=cached.at; return;
+  }
+  try {
+    const j=await fetch(API.routes,{cache:'no-store'}).then(r=>r.json());
+    if (!Array.isArray(j.data)||!j.data.length) throw new Error('empty');
+    state.routeList=j.data.map(r=>({route:r.route,bound:r.bound,service_type:String(r.service_type||'1'),orig_tc:r.orig_tc||'',dest_tc:r.dest_tc||'',co:r.co||'KMB'}));
+    state.routeAt=Date.now(); writeJSON(KEYS.routes,{at:state.routeAt,data:state.routeList});
+  } catch { state.routeList=(cached&&cached.data)||[]; }
+}
+async function loadStopMap() {
+  const cached=readJSON(KEYS.stopMap,null);
+  if (cached && cached.at && Date.now()-cached.at<DAY_MS && cached.data && Object.keys(cached.data).length) {
+    state.stopMap=cached.data; state.stopMapReady=true;
+  }
+  try {
+    const j=await fetch(API.stops,{cache:'no-store'}).then(r=>r.json());
+    const map={};
+    for (const s of (j.data||[])) map[s.stop]={id:s.stop,name:s.name_tc||s.name_en||s.stop,lat:Number(s.lat)||null,lng:Number(s.long)||null};
+    if (Object.keys(map).length) { state.stopMap=map; state.stopMapReady=true; writeJSON(KEYS.stopMap,{at:Date.now(),data:map}); }
+  } catch { /* keep cache; individual fallback below */ }
+}
+async function ensureStopDetails(ids) {
+  const missing=ids.filter(id=>id&&!state.stopMap[id]);
+  if (!missing.length) return;
+  await Promise.allSettled(missing.slice(0,80).map(async id=>{
+    try {
+      const j=await fetch(API.stop(id),{cache:'no-store'}).then(r=>r.json());
+      const d=j.data||{};
+      state.stopMap[id]={id,name:d.name_tc||d.name_en||id,lat:Number(d.lat)||null,lng:Number(d.long)||null};
+    } catch {}
+  }));
+}
+async function loadStops() {
+  const key=routeKey();
+  state.stopsError=null;
+  try {
+    const j=await fetch(API.routeStop(state.route,state.bound,state.serviceType),{cache:'no-store'}).then(r=>r.json());
+    const rows=(j.data||[]).slice().sort((a,b)=>Number(a.seq)-Number(b.seq));
+    await ensureStopDetails(rows.map(r=>r.stop));
+    state.stops=rows.map(r=>{
+      const d=state.stopMap[r.stop]||{};
+      return {id:r.stop,seq:Number(r.seq)||0,name:d.name||r.stop,lat:d.lat||null,lng:d.lng||null};
+    });
+    if (!state.stops.length) throw new Error('empty');
+    const saved=state.stopByKey[key];
+    let pick=state.stops.find(s=>s.id===saved);
+    if (!pick && state.userPos) {
+      pick=state.stops.filter(s=>s.lat!=null).map(s=>({s,d:haversine(state.userPos,s)})).sort((a,b)=>a.d-b.d)[0]?.s;
+    }
+    state.stopId=(pick||state.stops[0]).id;
+    state.stopByKey[key]=state.stopId; writeJSON(KEYS.stopByKey,state.stopByKey);
+  } catch (err) {
+    state.stops=[]; state.stopId=null; state.stopsError=err&&err.message||'network';
+  }
+  renderBus();
+}
+function renderBus() {
+  const info=getRouteInfo();
+  $('#routeBtn').textContent=state.route;
+  $('#busTitle').textContent=info.dest_tc?`往 ${info.dest_tc}`:`路線 ${state.route}`;
+  $('#busSub').textContent=info.orig_tc?`九巴／龍運 · ${info.orig_tc} → ${info.dest_tc}`:'九巴／龍運';
+  const tabs=$('#dirTabs'); tabs.dataset.active=state.bound;
+  const o=routeOptions().find(r=>r.bound==='O'), i=routeOptions().find(r=>r.bound==='I');
+  $('[data-bound="O"]',tabs).textContent=o?`往 ${o.dest_tc}`:'去程';
+  $('[data-bound="I"]',tabs).textContent=i?`往 ${i.dest_tc}`:'回程';
+  $$('button',tabs).forEach(b=>b.setAttribute('aria-selected',String(b.dataset.bound===state.bound)));
+  const types=Array.from(new Set(routeOptions().filter(r=>r.bound===state.bound).map(r=>String(r.service_type||'1')))).sort();
+  const st=$('#serviceTabs'); st.hidden=types.length<2;
+  st.innerHTML=types.map(t=>`<button type="button" data-service="${esc(t)}" aria-pressed="${t===state.serviceType}">服務 ${esc(t)}</button>`).join('');
+  const s=currentStop();
+  let name=s?s.name:'選擇車站';
+  if (s && state.userPos && s.lat!=null) name+=` · ${fmtDistance(haversine(state.userPos,s))}`;
+  $('#stopName').textContent=name;
+  $('#stopSheetTitle').textContent=`${state.route} 車站`;
+  renderEta();
+}
+function clearSceneSelection() {
+  if (!state.activeScene) return;
+  state.activeScene=null; try{localStorage.removeItem(KEYS.activeScene)}catch{} renderScenes();
+}
+function setRoute(route) {
+  if (!routeOptions(route).length) return;
+  route=String(route);
+  state.route=route;
+  const pref=state.routePrefs[route]||{};
+  const opts=routeOptions(route);
+  let bound=pref.bound; if (!opts.some(r=>r.bound===bound)) bound=opts[0].bound;
+  let st=String(pref.serviceType||'1'); if (!opts.some(r=>r.bound===bound&&String(r.service_type)===st)) st=String(opts.find(r=>r.bound===bound)?.service_type||'1');
+  state.bound=bound; state.serviceType=st;
+  state.recentRoutes=[route,...state.recentRoutes.filter(r=>r!==route)].slice(0,5);
+  state.routePrefs[route]={bound,serviceType:st};
+  saveCurrent(); writeJSON(KEYS.routePrefs,state.routePrefs); writeJSON(KEYS.recentRoutes||KEYS.recentRoutes,state.recentRoutes);
+  clearSceneSelection();
+  state.stopId=state.stopByKey[routeKey()]||null; state.stops=[]; state.etas=[]; state.selectedBus=0; state.etaError=null;
+  renderBus(); closeSheet(); loadStops().then(()=>refreshEta()); loadHourly();
+}
+function setBound(bound) {
+  if (bound!=='O'&&bound!=='I') return;
+  if (bound===state.bound) return;
+  state.bound=bound;
+  const opts=routeOptions().find(r=>r.bound===bound);
+  if (!opts || String(opts.service_type)!==state.serviceType) state.serviceType=String(opts?.service_type||'1');
+  state.routePrefs[state.route]={bound,serviceType:state.serviceType};
+  writeJSON(KEYS.routePrefs,state.routePrefs); saveCurrent(); clearSceneSelection();
+  state.stopId=state.stopByKey[routeKey()]||null; state.stops=[]; state.etas=[]; state.selectedBus=0; state.etaError=null;
+  renderBus(); loadStops().then(()=>refreshEta()); loadHourly();
+}
+function setServiceType(st) {
+  st=String(st); if (st===state.serviceType) return;
+  state.serviceType=st; state.routePrefs[state.route]={bound:state.bound,serviceType:st};
+  writeJSON(KEYS.routePrefs,state.routePrefs); saveCurrent(); clearSceneSelection();
+  state.stopId=state.stopByKey[routeKey()]||null; state.stops=[]; state.etas=[]; state.selectedBus=0; state.etaError=null;
+  renderBus(); loadStops().then(()=>refreshEta()); loadHourly();
+}
+
+/* ===== sheets ===== */
+let openSheetEl=null;
+function openSheet(el) {
+  if (openSheetEl===el) return;
+  if (openSheetEl) closeSheet(true);
+  const bd=$('#sheetBackdrop'); bd.hidden=false; el.hidden=false; el.scrollTop=0;
+  requestAnimationFrame(()=>{ bd.classList.add('show'); el.classList.add('show'); });
+  document.body.style.overflow='hidden'; openSheetEl=el;
+}
+function closeSheet(instant=false) {
+  const el=openSheetEl; if(!el) return;
+  openSheetEl=null; el.classList.remove('show'); $('#sheetBackdrop').classList.remove('show'); document.body.style.overflow='';
+  if (instant) { el.hidden=true; $('#sheetBackdrop').hidden=true; }
+  else setTimeout(()=>{ if(!openSheetEl){ el.hidden=true; $('#sheetBackdrop').hidden=true; } },380);
+}
+function starHTML(on,kind,id) {
+  return `<button class="star-btn${on?' on':''}" type="button" data-star="${kind}" data-star-id="${esc(id)}" aria-label="${on?'取消書籤':'加書籤'}">${on?'★':'☆'}</button>`;
+}
+function openRouteSheet() { $('#routeSearch').value=''; renderRouteList(''); openSheet($('#routeSheet')); }
+function renderRouteList(query='') {
+  const q=String(query||'').trim().toUpperCase();
+  const map=new Map(); for(const r of state.routeList) if(!map.has(r.route)) map.set(r.route,r);
+  let rows=[...map.values()];
+  if (q) rows=rows.filter(r=>r.route.toUpperCase().includes(q)||(r.orig_tc||'').includes(query)||(r.dest_tc||'').includes(query));
+  const recentIDs=readJSON(KEYS.recentRoutes,[]);
+  const recent=rows.filter(r=>recentIDs.includes(r.route));
+  const favs=rows.filter(r=>state.favRoutes.includes(r.route));
+  const normal=rows.filter(r=>!state.favRoutes.includes(r.route)&&!recentIDs.includes(r.route));
+  const item=(r)=>`<button class="pick-item" type="button" role="option" data-route="${esc(r.route)}" aria-selected="${r.route===state.route}">
+    <span class="rnum">${esc(r.route)}</span><span class="ptext"><b>${esc(r.orig_tc)} → ${esc(r.dest_tc)}</b><small>${routeOptions(r.route).map(x=>x.bound==='O'?'去程':'回程').join(' · ')}</small></span>
+    ${r.route===state.route?'<span class="tick">✓</span>':''}${starHTML(isFavRoute(r.route),'route',r.route)}</button>`;
+  const group=(label,arr)=>arr.length?`<div class="group-label">${label}</div>`+arr.map(item).join(''):'';
+  $('#routeFavs').innerHTML=group('★ 常用',favs)+group('最近使用',recent);
+  $('#routeList').innerHTML=rows.length?(group('全部路線',normal)):'<div class="list-empty">找不到路線</div>';
+}
+function openStopSheet() { $('#stopSearch').value=''; renderStopList(''); openSheet($('#stopSheet')); }
+function renderStopList(query='') {
+  const q=String(query||'').trim();
+  let items=state.stops.filter(s=>!q||s.name.includes(q));
+  items=state.userPos
+    ? items.map(s=>({s,d:s.lat!=null?haversine(state.userPos,s):Infinity})).sort((a,b)=>a.d-b.d)
+    : items.map(s=>({s,d:Infinity}));
+  const favs=items.filter(x=>isFavStop(x.s.id));
+  const normal=items.filter(x=>!isFavStop(x.s.id));
+  const item=({s,d})=>`<button class="pick-item" type="button" role="option" data-stop="${esc(s.id)}" aria-selected="${s.id===state.stopId}">
+    <span class="seq">${s.seq}</span><span class="nm">${esc(s.name)}</span>
+    ${Number.isFinite(d)?`<span class="dist">${fmtDistance(d)}</span>`:''}
+    ${s.id===state.stopId?'<span class="tick">✓</span>':''}${starHTML(isFavStop(s.id),'stop',s.id)}</button>`;
+  const group=(label,arr)=>arr.length?`<div class="group-label">${label}${state.userPos?' · 按距離':''}</div>`+arr.map(item).join(''):'';
+  $('#stopFavs').innerHTML=group('★ 常用車站',favs);
+  $('#stopList').innerHTML=items.length?group(state.userPos?'附近車站':'沿線車站',normal):'<div class="list-empty">找不到車站</div>';
+}
+function selectStop(id) {
+  if (!state.stops.some(s=>s.id===id)) return;
+  state.stopId=id; state.stopByKey[routeKey()]=id; writeJSON(KEYS.stopByKey,state.stopByKey);
+  const sc=state.scenes.find(x=>x.id===state.activeScene);
+  if (sc) { sc.stopId=id; writeJSON(KEYS.scenes,state.scenes); }
+  state.etas=[]; state.selectedBus=0; state.etaError=null;
+  renderBus(); closeSheet(); refreshEta(); loadHourly();
+}
+function locateForStops(autoSelect=false) {
+  if (!navigator.geolocation) { toast('此裝置不支援定位'); return; }
+  const btn=autoSelect?$('#locMainBtn'):$('#locBtn'), label=autoSelect?null:$('#locLabel');
+  if (btn) btn.disabled=true; if (label) label.textContent='定位中…';
+  navigator.geolocation.getCurrentPosition(pos=>{
+    if (btn) btn.disabled=false; if (label) label.textContent='重新定位';
+    state.userPos={lat:pos.coords.latitude,lng:pos.coords.longitude}; writeJSON(KEYS.pos,state.userPos);
+    renderBus(); renderStopList($('#stopSearch').value); renderWeather(); loadHourly();
+    if (autoSelect) {
+      const near=state.stops.filter(s=>s.lat!=null).map(s=>({s,d:haversine(state.userPos,s)})).sort((a,b)=>a.d-b.d)[0];
+      if (near) { selectStop(near.s.id); toast(`已切至最近車站：${near.s.name}（${fmtDistance(near.d)}）`); }
+      else toast('已取得位置');
+    } else toast('已按距離排列車站');
+  },err=>{
+    if (btn) btn.disabled=false; if (label) label.textContent='用我的位置分開車站';
+    toast(err&&err.code===1?'未獲授權使用位置':'無法取得位置');
+  },{enableHighAccuracy:true,timeout:10000,maximumAge:60000});
+}
+/* ===== ETA + integrated countdown ===== */
+async function refreshEta() {
+  const token=++etaToken, stopId=state.stopId, route=state.route, bound=state.bound, st=state.serviceType;
+  if (!stopId) { state.etaError='no-stop'; renderEta(); return; }
+  state.etaLoading=true; state.etaCacheUsed=false; $('#refreshBtn').classList.add('loading'); renderEta();
+  try {
+    const res=await fetch(API.eta(stopId),{cache:'no-store'});
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    const json=await res.json(); if(token!==etaToken) return;
+    const dir=bound==='O'?'O':'I', seen=new Set();
+    const list=(json.data||[])
+      .filter(e=>e.route===route&&e.dir===dir&&String(e.service_type)===String(st)&&e.eta)
+      .map(e=>({t:new Date(e.eta).getTime(),rmk:(e.rmk_tc||'').trim()}))
+      .filter(e=>Number.isFinite(e.t)&&e.t>Date.now()-45000)
+      .sort((a,b)=>a.t-b.t)
+      .filter(e=>{ if(seen.has(e.t))return false; seen.add(e.t); return true; })
+      .slice(0,3);
+    state.etas=list; state.selectedBus=Math.min(state.selectedBus,Math.max(0,list.length-1));
+    state.etaError=null; state.etaFetchedAt=Date.now();
+    writeJSON(KEYS.etaCache,{at:state.etaFetchedAt,route,bound,serviceType:st,stopId,data:list});
+  } catch(err) {
+    if(token!==etaToken) return;
+    const c=readJSON(KEYS.etaCache,null);
+    if (c && c.stopId===stopId && c.route===route && c.bound===bound && String(c.serviceType)===String(st) && Array.isArray(c.data)) {
+      state.etas=c.data.filter(e=>e.t>Date.now()-30*60*1000);
+      state.etaFetchedAt=c.at; state.etaCacheUsed=true; state.etaError=err&&err.message||'network';
+    } else { state.etas=[]; state.etaError=err&&err.message||'network'; }
+  } finally {
+    if(token!==etaToken) return;
+    state.etaLoading=false; $('#refreshBtn').classList.remove('loading'); renderEta(); tickEtas(); tickLeave();
+  }
+}
+function etaStatusHTML() {
+  if (state.stopsError) return '<p class="ride-status">未能取得車站清單 · 請檢查網絡</p>';
+  if (state.etaLoading && !state.etas.length) return '<p class="ride-status">正在取得班次…</p>';
+  if (state.etaError && state.etaCacheUsed) return '<p class="ride-status">離線資料 · 顯示上次快取班次</p>';
+  if (state.etaError) return '<p class="ride-status">未能取得班次 · <button class="link-btn" type="button" data-action="retry">重試</button></p>';
+  if (!state.etas.length) return '<p class="ride-status">暫時沒有班次，可能已過服務時間</p>';
+  return '';
+}
+function renderEta() {
+  const bus=state.etas[state.selectedBus]||state.etas[0];
+  const side=(bus&&state.leaveMode==='bus')
+    ? `<div class="ride-side"><span class="ride-eta"><b data-eta-min="${bus.t}">--</b><em>分鐘到站</em></span><span class="ride-time">${timeOf(bus.t)} 到站</span>${bus.rmk?`<span class="tag">${esc(bus.rmk)}</span>`:''}</div>`
+    : '';
+  const chips=(state.leaveMode==='bus'&&state.etas.length)
+    ? `<div class="bus-picker" role="group" aria-label="選擇班次">${state.etas.map((e,i)=>`<button class="bus-chip${i===state.selectedBus?' selected':''}" type="button" data-eta-pick="${i}" aria-pressed="${i===state.selectedBus}"><b>${timeOf(e.t)}</b><small>${i===0?'下一班':`第${i+1}班`}</small></button>`).join('')}</div>`
+    : '';
+  const rows=(state.etas.length>1&&state.leaveMode==='bus')
+    ? `<div class="ride-rows">${state.etas.map((e,i)=>({e,i})).filter(x=>x.i!==state.selectedBus).map(x=>`<div class="ride-row"><span class="t">${timeOf(x.e.t)}</span>${x.e.rmk?`<span class="tag">${esc(x.e.rmk)}</span>`:''}<span class="m" data-eta-row="${x.e.t}">--</span></div>`).join('')}</div>`
+    : '';
+  const alert=state.alertOn?`<div class="alert-bar"><span>🔔 出門提示持續中（聲音／震動）</span><button type="button" data-action="stop-alert">停止提示</button></div>`:'';
+  $('#etaArea').innerHTML=`<div class="ride-panel" id="ridePanel"><div class="ride-main"><span class="ride-cap">🚪 出門口倒數</span><strong class="ride-count" id="leaveCountdown">--:--</strong><span class="ride-note" id="leaveSub">—</span></div>${side}</div>${chips}${etaStatusHTML()}${rows}${alert}`;
+  $('#etaUpdated').textContent=state.etaFetchedAt
+    ? (state.etaError?`上次更新 ${timeWithSec(state.etaFetchedAt)}`:`更新於 ${timeWithSec(state.etaFetchedAt)}`)
+    : '尚未更新';
+}
+function tickEtas() {
+  const now=Date.now();
+  $$('[data-eta-min]').forEach(el=>{
+    const secs=Math.ceil((Number(el.dataset.etaMin)-now)/1000), em=el.nextElementSibling;
+    if (secs<=25) { el.textContent='即時'; if(em) em.textContent='到站'; }
+    else { el.textContent=Math.ceil(secs/60); if(em) em.textContent='分鐘到站'; }
+  });
+  $$('[data-eta-row]').forEach(el=>{
+    const secs=Math.ceil((Number(el.dataset.etaRow)-now)/1000);
+    el.innerHTML=secs<=25?'即時到站':`${Math.ceil(secs/60)}<span>分鐘</span>`;
+  });
+}
+
+/* ===== leave countdown ===== */
+function clampWalk(n){ return Math.min(30,Math.max(1,Math.round(Number(n)||5))); }
+function isValidHHMM(v){ return /^([01]?\d|2[0-3]):[0-5]\d$/.test(String(v||'')); }
+function nextDailyTarget(hhmm) {
+  const m=/^([01]?\d|2[0-3]):([0-5]\d)$/.exec(String(hhmm||''));
+  const hh=Number(m?m[1]:8), mm=Number(m?m[2]:0), p=hkParts();
+  const today=Date.UTC(Number(p.year),Number(p.month)-1,Number(p.day),hh-8,mm,0);
+  return Date.now()-today>60*60*1000?today+DAY_MS:today;
+}
+function fmtCountdown(ms) {
+  const t=Math.max(0,Math.floor(ms/1000));
+  return t>=3600?`${Math.floor(t/3600)}:${pad2(Math.floor(t/60)%60)}:${pad2(t%60)}`:`${pad2(Math.floor(t/60))}:${pad2(t%60)}`;
+}
+function leaveInfo() {
+  if (state.leaveMode==='bus') {
+    const bus=state.etas[state.selectedBus]||state.etas[0];
+    if (!bus) return {target:null,sub:state.etaError?'未能取得班次，請稍後重試':`等待 ${state.route} 班次資料…`};
+    const target=bus.t-state.walkMin*60000;
+    return {target,sub:`${timeOf(target)} 出門 → ${timeOf(bus.t)} 到站 · 步行 ${state.walkMin} 分鐘`};
+  }
+  const target=nextDailyTarget(state.leaveTime);
+  return {target,sub:Date.now()>target?`已過 ${state.leaveTime} · 明日再倒數`:`每日 ${state.leaveTime} · 香港時間`};
+}
+function renderLeave() {
+  $('#leaveModeBtn').textContent=state.leaveMode==='bus'?'自訂時間':`跟 ${state.route}`;
+  $('#leaveWalk').hidden=state.leaveMode!=='bus';
+  $('#leaveCustomPanel').hidden=state.leaveMode!=='custom';
+  $('#walkValue').textContent=state.walkMin;
+  $('#leaveTimeInput').value=state.leaveTime;
+  renderEta(); tickLeave();
+}
+function tickLeave() {
+  const info=leaveInfo(), panel=$('#ridePanel'), count=$('#leaveCountdown'), note=$('#leaveSub');
+  if (!panel||!count) return;
+  if (info.target==null||!Number.isFinite(info.target)) {
+    panel.classList.remove('due','soon','near'); count.textContent='--:--';
+  } else {
+    const diff=info.target-Date.now(), due=diff<=0;
+    panel.classList.toggle('due',due); panel.classList.toggle('soon',!due&&diff<=60000);
+    panel.classList.toggle('near',!due&&diff>60000&&diff<=5*60000);
+    count.textContent=due?'出門口！':fmtCountdown(diff);
+    if (due) startLeaveAlert();
+  }
+  if (note) note.textContent=info.sub;
+}
+function setLeaveMode(mode) {
+  if (mode!=='bus'&&mode!=='custom') return;
+  if (state.leaveMode===mode) return;
+  state.leaveMode=mode; writeJSON(KEYS.leaveMode,mode); stopLeaveAlert(); renderLeave();
+}
+function adjustWalk(delta) {
+  const next=clampWalk(state.walkMin+delta); if(next===state.walkMin) return;
+  state.walkMin=next; writeJSON(KEYS.walk,next); renderLeave();
+}
+function setLeaveTime(v) { if(!isValidHHMM(v)) return; state.leaveTime=v; writeJSON(KEYS.leaveTime,v); const inp=$('#leaveTimeInput'); if(inp) inp.value=v; tickLeave(); }
+
+/* ===== persistent leave alert ===== */
+function ensureAudio() {
+  try {
+    if (!state.audioCtx) state.audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if (state.audioCtx.state==='suspended') state.audioCtx.resume().catch(()=>{});
+    return state.audioCtx;
+  } catch { return null; }
+}
+function unlockAudio() {
+  const ctx=ensureAudio(); if(!ctx) return;
+  try {
+    const buf=ctx.createBuffer(1,1,ctx.sampleRate);
+    const src=ctx.createBufferSource(); src.buffer=buf; src.connect(ctx.destination); src.start(0);
+  } catch {}
+}
+function beep() {
+  const ctx=ensureAudio(); if(!ctx) return;
+  try {
+    const now=ctx.currentTime;
+    [880,660].forEach((freq,i)=>{
+      const t=now+i*.16, o=ctx.createOscillator(), g=ctx.createGain();
+      o.type='sine'; o.frequency.setValueAtTime(freq,t);
+      g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.22,t+.02);
+      g.gain.exponentialRampToValueAtTime(.0001,t+.14);
+      o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+.16);
+    });
+  } catch {}
+}
+function buzz() { try { if(!navigator.vibrate) return; if(navigator.userActivation && !navigator.userActivation.hasBeenActive) return; navigator.vibrate([400,200,400,200,800]); } catch {} }
+function startLeaveAlert() {
+  if (state.alertOn) return;
+  state.alertOn=true; ensureAudio(); beep(); buzz();
+  alertTimer=setInterval(()=>{ beep(); buzz(); },3000);
+  renderEta(); toast('出門提示已開啟 · 按「停止提示」關閉');
+}
+function stopLeaveAlert() {
+  if (alertTimer) { clearInterval(alertTimer); alertTimer=null; }
+  try { if(navigator.vibrate) navigator.vibrate(0); } catch {}
+  if (!state.alertOn) return;
+  state.alertOn=false; renderEta(); toast('已停止出門提示');
+}
+/* ===== weather + 3-hour forecast ===== */
+function rainNowText(cur) {
+  const rw=(cur&&cur.rainfall&&Array.isArray(cur.rainfall.data))?cur.rainfall.data:[];
+  const valid=rw.map(x=>Number(x.max)).filter(v=>Number.isFinite(v));
+  const max=valid.length?Math.max(...valid):null;
+  if (max==null) return {text:'降雨數據載入中…',icon:'🌤️',max:null};
+  if (max>=50) return {text:'而家落大雨',icon:'🌧️',max};
+  if (max>=10) return {text:'而家落雨',icon:'🌧️',max};
+  if (max>=0.5) return {text:'而家微雨',icon:'🌦️',max};
+  return {text:'而家無雨',icon:'🌤️',max};
+}
+function tempValue(cur) {
+  const a=(cur&&cur.temperature&&Array.isArray(cur.temperature.data))?cur.temperature.data:[];
+  for (const x of a) if (x.place==='香港天文台'&&Number.isFinite(Number(x.value))) return Number(x.value);
+  const v=a.map(x=>Number(x.value)).filter(Number.isFinite);
+  return v.length?Math.round(v.reduce((s,x)=>s+x,0)/v.length):null;
+}
+function hkoToday(fnd) {
+  const rows=(fnd&&Array.isArray(fnd.weatherForecast))?fnd.weatherForecast:[];
+  const p=hkParts(), key=`${p.year}${p.month}${p.day}`;
+  return rows.find(r=>String(r.forecastDate)===key)||rows[0]||null;
+}
+function psrNumber(v) {
+  if (Number.isFinite(Number(v))) return Number(v);
+  return ({'低':20,'中':50,'高':80})[String(v||'').trim()]??null;
+}
+function forecastRange(fnd) {
+  const r=hkoToday(fnd); if (!r) return {lo:null,hi:null,psr:null,rainHint:false};
+  const lo=Number(r.forecastMintemp?.value), hi=Number(r.forecastMaxtemp?.value);
+  const text=String(r.forecastWeather||'');
+  return {
+    lo:Number.isFinite(lo)?lo:null,
+    hi:Number.isFinite(hi)?hi:null,
+    psr:psrNumber(r.PSR),
+    rainHint:/雨|雷|陣/.test(text),
+  };
+}
+function dailyInfo(hourly) {
+  const d=hourly?.daily; if(!d||!Array.isArray(d.time)) return null;
+  const p=hkParts(), key=`${p.year}-${p.month}-${p.day}`;
+  let i=d.time.indexOf(key); if(i<0) i=0;
+  const lo=Number(d.temperature_2m_min?.[i]), hi=Number(d.temperature_2m_max?.[i]), psr=Number(d.precipitation_probability_max?.[i]);
+  return {lo:Number.isFinite(lo)?lo:null,hi:Number.isFinite(hi)?hi:null,psr:Number.isFinite(psr)?psr:null};
+}
+function warnInfo(warn) {
+  const a=(warn&&Array.isArray(warn.warningInfo))?warn.warningInfo:[];
+  return a.filter(w=>WARN_NAMES[w.type]).map(w=>({type:w.type,name:WARN_NAMES[w.type],desc:(w.description||'').trim()}));
+}
+function nearestHourIndex(hourly) {
+  const arr=hourly?.hourly; if(!arr||!Array.isArray(arr.time)) return -1;
+  const now=Date.now(); let best=-1,bestD=Infinity;
+  for (let i=0;i<arr.time.length;i++) {
+    const t=Date.parse(arr.time[i]+'+08:00'), d=Math.abs(t-now);
+    if (Number.isFinite(d)&&d<bestD) { bestD=d; best=i; }
+  }
+  return best;
+}
+function rainChanceNow(hourly) {
+  const i=nearestHourIndex(hourly);
+  return i>=0?Number(hourly.hourly.precipitation_probability?.[i]):null;
+}
+function renderWeather() {
+  const cur=state.weather?.cur, fnd=state.weather?.fnd, warn=state.weather?.warn;
+  const rain=rainNowText(cur), warns=warnInfo(warn);
+  const hko=forecastRange(fnd), daily=dailyInfo(state.hourly);
+  const range={
+    lo:(daily&&daily.lo!=null)?daily.lo:hko.lo,
+    hi:(daily&&daily.hi!=null)?daily.hi:hko.hi,
+    psr:(daily&&daily.psr!=null)?daily.psr:hko.psr,
+  };
+  const localTemp=Number(state.hourly?.current?.temperature_2m);
+  const temp=Number.isFinite(localTemp)?Math.round(localTemp):tempValue(cur);
+  const chance=rainChanceNow(state.hourly);
+  const umbrella=(range.psr!=null&&range.psr>=40)||hko.rainHint||(chance!=null&&chance>=50)||rain.max>=0.5||warns.some(w=>/雨|暴雨|雷暴/.test(w.name+w.desc));
+  const rangeText=(range.lo!=null&&range.hi!=null)?`${Math.round(range.lo)}° / ${Math.round(range.hi)}°`:'--° / --°';
+  $('#heroWxIcon').textContent=rain.icon;
+  $('#heroWxRain').textContent=rain.text;
+  $('#heroWxRange').textContent=rangeText;
+  $('#wxIcon').textContent=rain.icon; $('#wxRain').textContent=rain.text;
+  $('#wxTemp').textContent=temp==null?'--':temp;
+  $('#wxRange').textContent=rangeText;
+  const district=weatherDistrictName();
+  $('#wxLoc').textContent=`📍 ${district==='auto'?'自動定位':district} · 更改`;
+  $('#wxUmbrella').textContent=umbrella
+    ? (range.psr!=null?`☂️ 今日下雨機會 ${range.psr}% · 建議帶傘`:'☂️ 今日預報有雨 · 建議帶傘')
+    : (chance!=null?`☂️ 未來 1 小時下雨機會 ${chance}%`:'今日暫時無需帶傘');
+  const banner=$('#warningBanner');
+  if (warns.length) {
+    banner.hidden=false;
+    banner.innerHTML=warns.map(w=>`<div><b>⚠️ ${esc(w.name)}</b>${w.desc?`<p>${esc(w.desc)}</p>`:''}</div>`).join('');
+  } else banner.hidden=true;
+  $('#wxUpdated').textContent=state.weather?.at?`更新 ${timeOf(state.weather.at)}`:'—';
+  renderHourly();
+}
+function renderHourly() {
+  const h=state.hourly?.hourly, box=$('#wxHours');
+  if (!h||!Array.isArray(h.time)) { box.innerHTML='<span class="hour-empty">天氣資料載入中…</span>'; return; }
+  const start=nearestHourIndex(state.hourly), out=[];
+  for (let i=Math.max(0,start);i<h.time.length&&out.length<8;i+=3) {
+    const t=Date.parse(h.time[i]+'+08:00');
+    if (!Number.isFinite(t)) continue;
+    const p=Number(h.precipitation_probability?.[i]);
+    const c=Number(h.temperature_2m?.[i]);
+    out.push(`<div class="hour${out.length===0?' now':''}"><span class="ht">${timeOf(t)}</span><span class="hi">${wxCodeEmoji(h.weather_code?.[i])}</span><span class="hp">${Number.isFinite(p)?p+'%':'--'}</span><span class="hc">${Number.isFinite(c)?Math.round(c)+'°':'--'}</span></div>`);
+  }
+  box.innerHTML=out.length?out.join(''):'<span class="hour-empty">暫時沒有逐小時資料</span>';
+}
+async function loadWeather() {
+  const token=++wxToken;
+  try {
+    const [cur, fnd, warn]=await Promise.all([
+      fetch(API.wx('rhrread'),{cache:'no-store'}).then(r=>r.json()),
+      fetch(API.wx('fnd'),{cache:'no-store'}).then(r=>r.json()),
+      fetch(API.wx('warningInfo'),{cache:'no-store'}).then(r=>r.json()).catch(()=>({})),
+    ]);
+    if (token!==wxToken) return;
+    state.weather={cur,fnd,warn,at:Date.now()}; writeJSON(KEYS.weather,state.weather); renderWeather();
+  } catch {
+    if (token!==wxToken) return;
+    if (!state.weather) renderWeatherError();
+  }
+}
+function weatherDistrictName() {
+  if (state.weatherLoc!=='auto') return state.weatherLoc;
+  return nearestDistrict(state.userPos)||'auto';
+}
+function weatherPosition() {
+  if (state.weatherLoc!=='auto') {
+    const d=DISTRICTS.find(x=>x.n===state.weatherLoc);
+    if (d) return {lat:d.lat,lng:d.lng};
+  }
+  return state.userPos||HK_DEFAULT;
+}
+function renderDistrictGrid() {
+  const opts=[{n:'auto',label:'自動定位'},...DISTRICTS.map(d=>({n:d.n,label:d.n}))];
+  $('#districtGrid').innerHTML=opts.map(o=>`<button type="button" data-district="${esc(o.n)}" aria-pressed="${o.n===state.weatherLoc}">${esc(o.label)}</button>`).join('');
+}
+function openWeatherSheet() { renderDistrictGrid(); openSheet($('#weatherSheet')); }
+function setWeatherLoc(v) {
+  if (v!=='auto'&&!DISTRICTS.some(d=>d.n===v)) return;
+  state.weatherLoc=v; writeJSON(KEYS.weatherLoc,v); renderWeather(); closeSheet(); loadHourly();
+  toast(v==='auto'?'天氣地點：自動定位':`天氣地點：${v}`);
+}
+async function loadHourly() {
+  const token=++hourlyToken;
+  const pos=weatherPosition();
+  const district=weatherDistrictName();
+  try {
+    const j=await fetch(API.hourly(pos.lat,pos.lng),{cache:'no-store'}).then(r=>r.json());
+    if (token!==hourlyToken) return;
+    state.hourly={...j,district,at:Date.now()}; writeJSON(KEYS.hourly,state.hourly); renderWeather();
+  } catch {
+    if (token!==hourlyToken) return;
+    if (!state.hourly) renderHourlyError();
+  }
+}
+function renderWeatherError() {
+  $('#heroWxRain').textContent='暫時無法取得天氣'; $('#wxRain').textContent='暫時無法取得天氣'; $('#wxTemp').textContent='--';
+  $('#wxRange').textContent='--° / --°'; $('#wxUmbrella').textContent='請檢查網絡'; $('#wxHours').innerHTML='<span class="hour-empty">暫時沒有資料</span>';
+}
+function renderHourlyError() { const box=$('#wxHours'); if (!box.textContent.trim()||box.textContent.includes('載入中')) box.innerHTML='<span class="hour-empty">暫時沒有逐小時資料</span>'; }
+
+/* ===== date labels / toast ===== */
+function updateDateLabels() { $('#heroDate').textContent=dateFmt.format(new Date()); }
+function toast(msg) {
+  const el=$('#toast'); el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2600);
+}
+function tick() { tickEtas(); tickLeave(); }
+/* ===== events ===== */
+function bindEvents() {
+  $('#themeBtn').addEventListener('click',cycleTheme);
+  $('#a2hsClose').addEventListener('click',closeA2HS);
+  $('#routeBtn').addEventListener('click',openRouteSheet);
+  $('#stopBtn').addEventListener('click',openStopSheet);
+  $('#locMainBtn').addEventListener('click',()=>locateForStops(true));
+  $('#locBtn').addEventListener('click',()=>locateForStops(false));
+  $('#wxLoc').addEventListener('click',openWeatherSheet);
+  $('#refreshBtn').addEventListener('click',()=>{ refreshEta(); toast('正在更新班次…'); });
+  $('#wakeBtn').addEventListener('click',toggleWakeLock);
+  $('#notifyBtn').addEventListener('click',toggleNotify);
+  ['pointerdown','touchstart','click'].forEach(ev=>document.addEventListener(ev,unlockAudio,{once:true,passive:true}));
+  $('#soundTestBtn').addEventListener('click',()=>{
+    unlockAudio(); beep(); buzz();
+    toast(navigator.vibrate?'已播放測試提示音及震動':'已播放測試提示音（此瀏覽器不支援震動）');
+  });
+  $$('.panel-move-btn').forEach(btn=>btn.addEventListener('click',()=>movePanel(btn.dataset.movePanel,btn.dataset.dir)));
+  $('#sceneBar').addEventListener('click',(e)=>{
+    const del=e.target.closest('[data-del-scene]');
+    if (del) { e.stopPropagation(); deleteScene(del.dataset.delScene); return; }
+    const add=e.target.closest('[data-add-scene]');
+    if (add) { saveCurrentScene(); return; }
+    const sc=e.target.closest('[data-scene]');
+    if (sc) applyScene(sc.dataset.scene);
+  });
+  $('#dirTabs').addEventListener('click',(e)=>{ const b=e.target.closest('[data-bound]'); if(b) setBound(b.dataset.bound); });
+  $('#serviceTabs').addEventListener('click',(e)=>{ const b=e.target.closest('[data-service]'); if(b) setServiceType(b.dataset.service); });
+  $('#walkMinus').addEventListener('click',()=>adjustWalk(-1));
+  $('#walkPlus').addEventListener('click',()=>adjustWalk(1));
+  $('#leaveModeBtn').addEventListener('click',()=>setLeaveMode(state.leaveMode==='bus'?'custom':'bus'));
+  $('#leaveTimeInput').addEventListener('change',(e)=>setLeaveTime(e.target.value));
+  $('#etaArea').addEventListener('click',(e)=>{
+    const pick=e.target.closest('[data-eta-pick]');
+    if (pick) { state.selectedBus=Number(pick.dataset.etaPick)||0; renderEta(); tickEtas(); tickLeave(); return; }
+    const act=e.target.closest('[data-action]');
+    if (!act) return;
+    if (act.dataset.action==='retry') refreshEta();
+    if (act.dataset.action==='stop-alert') stopLeaveAlert();
+  });
+  $('#routeSearch').addEventListener('input',(e)=>renderRouteList(e.target.value));
+  $('#stopSearch').addEventListener('input',(e)=>renderStopList(e.target.value));
+  $('#routeSheet').addEventListener('click',(e)=>{
+    const star=e.target.closest('[data-star]');
+    if (star) { e.stopPropagation(); const on=toggleFav(star.dataset.star,star.dataset.starId); toast(on?'已加入常用':'已移除書籤'); renderRouteList($('#routeSearch').value); return; }
+    const row=e.target.closest('[data-route]'); if(row) setRoute(row.dataset.route);
+  });
+  $('#stopSheet').addEventListener('click',(e)=>{
+    const star=e.target.closest('[data-star]');
+    if (star) { e.stopPropagation(); const on=toggleFav(star.dataset.star,star.dataset.starId); toast(on?'已加入常用':'已移除書籤'); renderStopList($('#stopSearch').value); return; }
+    const row=e.target.closest('[data-stop]'); if(row) selectStop(row.dataset.stop);
+  });
+  $('#weatherSheet').addEventListener('click',(e)=>{ const b=e.target.closest('[data-district]'); if(b) setWeatherLoc(b.dataset.district); });
+  $('#sheetBackdrop').addEventListener('click',()=>closeSheet());
+  $$('[data-close-sheet]').forEach(b=>b.addEventListener('click',()=>closeSheet()));
+  document.addEventListener('keydown',(e)=>{ if(e.key==='Escape'&&openSheetEl) closeSheet(); });
+}
+</script>
+</body>
+</html>
