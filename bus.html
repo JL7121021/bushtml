@@ -143,6 +143,11 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
 .stepper{display:inline-flex;align-items:center;gap:5px;padding:4px;border-radius:12px;background:var(--surface);box-shadow:var(--in-sm);font-variant-numeric:tabular-nums}
 .stepper button{width:25px;height:25px;border:0;border-radius:9px;background:var(--surface);box-shadow:var(--out-xs);font-size:15px;display:grid;place-items:center}
 .stepper button:active{box-shadow:var(--in-sm)} .stepper strong{min-width:12px;text-align:center;font-size:13px}.stepper span{font-size:10px;color:var(--ink3);margin-right:4px}
+.alert-config{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:11px;color:var(--ink3)}
+.alert-config label{display:inline-flex;align-items:center;gap:6px}
+.alert-config select{border:0;border-radius:999px;padding:6px 10px;background:var(--surface);box-shadow:var(--out-xs);color:var(--ink);font-size:11px;font-weight:650;-webkit-appearance:none}
+.lead-presets{display:inline-flex;align-items:center;gap:5px}.lead-presets button{border:0;border-radius:999px;padding:6px 9px;background:var(--surface);box-shadow:var(--out-xs);color:var(--ink2);font-size:11px;font-weight:650}
+.lead-presets button.active{box-shadow:var(--in-sm);color:var(--accent)}
 .eta-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:10.5px;color:var(--ink3)}
 .auto-tag{display:inline-flex;align-items:center;gap:5px}.auto-tag i{width:5px;height:5px;border-radius:50%;background:var(--green);animation:fade 2.4s infinite}@keyframes fade{50%{opacity:.3}}
 
@@ -259,6 +264,24 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
         </div>
         <button class="notify-toggle" id="notifyBtn" type="button" aria-pressed="false">出門通知：關</button>
       </div>
+      <div class="alert-config">
+        <label>提示次數
+          <select id="alertRepeat" aria-label="提示次數">
+            <option value="0">持續</option>
+            <option value="3">3 次</option>
+            <option value="5">5 次</option>
+            <option value="10">10 次</option>
+          </select>
+        </label>
+        <div class="lead-presets" role="group" aria-label="出門提前量">
+          <span>提前</span>
+          <button type="button" data-walk="5">5</button>
+          <button type="button" data-walk="10">10</button>
+          <button type="button" data-walk="15">15</button>
+          <button type="button" data-walk="20">20</button>
+          <span>分鐘</span>
+        </div>
+      </div>
       <div class="eta-foot"><span id="etaUpdated">—</span><span class="auto-tag"><i></i>自動更新 · <button class="link-btn" id="calendarBtn" type="button">📅 加入行事曆</button></span></div>
     </section>
 
@@ -336,7 +359,7 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
 <noscript><p style="text-align:center;padding:24px">請開啟 JavaScript 以查看實時班次及天氣。</p></noscript>
 <script>
 'use strict';
-const VERSION='1.0.6';
+const VERSION='1.0.7';
 /* ===== config ===== */
 const API = {
   routes: 'https://data.etabus.gov.hk/v1/transport/kmb/route/',
@@ -350,7 +373,7 @@ const API = {
 const KEYS = {
   current:'hkbus.v2.current', routes:'hkbus.v2.routes', stopMap:'hkbus.v2.stopmap',
   routePrefs:'hkbus.v2.routePrefs', stopByKey:'hkbus.v2.stopByKey',
-  walk:'hkbus.v2.walk',
+  walk:'hkbus.v2.walk', alertRepeat:'hkbus.v2.alertRepeat',
   pos:'hkbus.v2.pos', weather:'hkbus.v2.weather', hourly:'hkbus.v2.hourly', weatherLoc:'hkbus.v2.weatherLoc',
   panelOrder:'hkbus.v2.panelOrder',
   theme:'hkbus.v2.theme', a2hs:'hkbus.v2.a2hs',
@@ -425,7 +448,7 @@ const state = {
   favRoutes:[], favStops:[], recentRoutes:[], scenes:[], activeScene:null,
   theme:'auto', weather:null, hourly:null, weatherLoc:'auto',
   panelOrder:['bus','weather','hourly'],
-  alertOn:false, audioCtx:null, alertAudio:null, alertPool:[], alertIndex:0, audioUnlocked:false, dueSince:0, alertSuppressedTarget:null, wakeLock:null, wakeLockWanted:true, notifyEnabled:false, leaveNotifiedTarget:null,
+  alertOn:false, alertMax:0, alertCount:0, audioCtx:null, alertAudio:null, alertPool:[], alertIndex:0, audioUnlocked:false, dueSince:0, alertSuppressedTarget:null, wakeLock:null, wakeLockWanted:true, notifyEnabled:false, leaveNotifiedTarget:null,
 };
 let etaToken=0, wxToken=0, hourlyToken=0, toastTimer=null, alertTimer=null;
 function readJSON(k,f){ try { const s=localStorage.getItem(k); return s?JSON.parse(s):f; } catch { return f; } }
@@ -481,6 +504,7 @@ function loadPrefs() {
   state.routePrefs=readJSON(KEYS.routePrefs,{}) || {};
   state.stopByKey=readJSON(KEYS.stopByKey,{}) || state.stopByKey;
   const walk=readJSON(KEYS.walk,null); if (Number.isFinite(walk)) state.walkMin=clampWalk(walk);
+  const ar=Number(readJSON(KEYS.alertRepeat,0)); state.alertMax=[0,3,5,10].includes(ar)?ar:0;
   state.pos=readJSON(KEYS.pos,null);
   if (state.pos && Number.isFinite(state.pos.lat) && Number.isFinite(state.pos.lng)) state.userPos=state.pos;
   const wl=readJSON(KEYS.weatherLoc,'auto');
@@ -948,6 +972,8 @@ function leaveInfo() {
 }
 function renderLeave() {
   $('#walkValue').textContent=state.walkMin;
+  const ar=$('#alertRepeat'); if (ar) ar.value=String(state.alertMax);
+  $$('[data-walk]').forEach(b=>b.classList.toggle('active',Number(b.dataset.walk)===state.walkMin));
   renderEta(); tickLeave();
 }
 function tickLeave() {
@@ -1092,11 +1118,17 @@ function buzz() { try { if(!navigator.vibrate) return; if(navigator.userActivati
 function startLeaveAlert() {
   if (state.alertOn || !state.notifyEnabled) return;
   state.alertSuppressedTarget=null;
+  state.alertCount=1;
   state.alertOn=true; beep(); buzz();
-  alertTimer=setInterval(()=>{ beep(); buzz(); },3000);
+  alertTimer=setInterval(()=>{
+    if (state.alertMax>0 && state.alertCount>=state.alertMax) {
+      stopLeaveAlert(true,true); toast(`提示已完成 ${state.alertMax} 次`); return;
+    }
+    state.alertCount++; beep(); buzz();
+  },3000);
   renderEta(); tickLeave(); toast('出門提示已開啟 · 按「停止提示」關閉');
 }
-function stopLeaveAlert(suppress=true) {
+function stopLeaveAlert(suppress=true, silent=false) {
   if (alertTimer) { clearInterval(alertTimer); alertTimer=null; }
   try { if(navigator.vibrate) navigator.vibrate(0); } catch {}
   if (suppress) {
@@ -1104,7 +1136,7 @@ function stopLeaveAlert(suppress=true) {
     if (info.target!=null && Number.isFinite(info.target)) state.alertSuppressedTarget=info.target;
   }
   if (!state.alertOn) return;
-  state.alertOn=false; renderEta(); tickLeave(); toast('已停止出門提示');
+  state.alertOn=false; renderEta(); tickLeave(); if(!silent) toast('已停止出門提示');
 }
 /* ===== weather + 3-hour forecast ===== */
 function rainNowText(cur) {
@@ -1301,6 +1333,14 @@ function bindEvents() {
   $('#serviceTabs').addEventListener('click',(e)=>{ const b=e.target.closest('[data-service]'); if(b) setServiceType(b.dataset.service); });
   $('#walkMinus').addEventListener('click',()=>adjustWalk(-1));
   $('#walkPlus').addEventListener('click',()=>adjustWalk(1));
+  $('#alertRepeat').addEventListener('change',(e)=>{
+    const n=Number(e.target.value); state.alertMax=[0,3,5,10].includes(n)?n:0;
+    writeJSON(KEYS.alertRepeat,state.alertMax); toast(state.alertMax?`提示會響 ${state.alertMax} 次`:'提示會持續響');
+  });
+  $$('[data-walk]').forEach(b=>b.addEventListener('click',()=>{
+    const n=Number(b.dataset.walk); if(!Number.isFinite(n)) return;
+    state.walkMin=clampWalk(n); writeJSON(KEYS.walk,state.walkMin); renderLeave();
+  }));
   $('#calendarBtn').addEventListener('click',addCalendarReminder);
   $('#etaArea').addEventListener('click',(e)=>{
     const pick=e.target.closest('[data-eta-pick]');
