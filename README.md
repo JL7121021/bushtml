@@ -15,6 +15,7 @@ iPhone 優先嘅單頁工具：九巴／龍運到站、香港天氣、24 小時�
 - **天氣**：香港天文台現況＋Open-Meteo 24 小時預報，可選每 1／2／3 小時。
 - **新聞卡**：預設隱藏，按「顯示新聞」先載入九巴、政府新聞網、BBC 中文。
 - **版面**：卡片的 ↑↓ 可調順序；背景同卡片對比已強化。
+<img width="851" height="1180" alt="image" src="https://github.com/user-attachments/assets/575098cc-b221-4a4b-9d71-853f766eb17c" />
 
 ## 使用
 
