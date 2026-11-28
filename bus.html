@@ -71,7 +71,7 @@ button,input{font-family:inherit} button{cursor:pointer;color:inherit} button:ac
 .theme-btn{width:28px;height:28px;font-size:12px}
 .theme-btn:active,.mini-btn:active{box-shadow:var(--in-sm)}
 .theme-btn[aria-pressed="true"]{box-shadow:var(--in-sm);color:var(--accent)}
-body.simple-mode .scenes,body.simple-mode .panel-moves,body.simple-mode .alert-config,body.simple-mode .route-news,body.simple-mode .route-news-list,body.simple-mode .a2hs{display:none!important}
+body.simple-mode .scene.add,body.simple-mode .panel-moves,body.simple-mode .alert-config,body.simple-mode .route-news,body.simple-mode .route-news-list,body.simple-mode .a2hs{display:none!important}
 .a2hs{display:flex;align-items:center;gap:8px;margin-top:5px;padding:6px 9px;border-radius:14px;background:var(--surface);box-shadow:var(--out-sm);font-size:11px;color:var(--ink2);line-height:1.4}
 .a2hs b{color:var(--ink)} .a2hs button{margin-left:auto;flex:none;border:0;border-radius:999px;padding:4px 10px;background:var(--surface);box-shadow:var(--out-xs);color:var(--ink3);font-size:11px}
 .utility-bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
@@ -462,7 +462,7 @@ button,a,input,label,[role="button"]{touch-action:manipulation}
 <noscript><p style="text-align:center;padding:24px">請開啟 JavaScript 以查看實時班次及天氣。</p></noscript>
 <script>
 'use strict';
-const VERSION='1.0.31';
+const VERSION='1.0.32';
 /* ===== config ===== */
 const API = {
   routes: 'https://data.etabus.gov.hk/v1/transport/kmb/route/',
